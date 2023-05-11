@@ -7,8 +7,6 @@ class Accelerometer:
     """
     A class used to represent an MPU6050 Accelerometer.
 
-    ...
-
     Attributes
     ----------
     i2c : I2C
