@@ -60,3 +60,13 @@ class Accelerometer:
         Stops data collection from the accelerometer.
         """
         self.running = False
+
+    def get_corrected_values(self):
+        """
+        Retrieve the sensor values and correct for drift using a complementary filter.
+
+        Returns:
+            dict: A dictionary containing the timestamp, corrected accelerometer, and gyroscope values.
+        """
+        pass
+    
