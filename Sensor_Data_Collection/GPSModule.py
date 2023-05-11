@@ -83,3 +83,4 @@ class GPSModule:
         if data:
             with open(filepath, 'w') as f:
                 json.dump(data, f)
+
