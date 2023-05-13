@@ -24,7 +24,7 @@ idx = 1
 
 # Variance values for Kalman Filtering
 sigma = 1
-var_accel = sigma # Accelerometer variance should be increased with time and/or acceleration magnitude
+var_accel = sigma # Accelerometer variance should be increased with time
 var_GPS = sigma
 
 while on:
@@ -46,5 +46,8 @@ while on:
     vel_z[0] = vel_z[1]
     vel_mag[0] = vel_mag[1]
 
+    if var_accel < 100: # to prevent numerical overflow
+        var_accel += 1 # to account for drift
+    
     idx += 1
     on = False
