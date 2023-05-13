@@ -3,7 +3,7 @@ import mpu6050
 import time
 import ujson
 
-class Accelerometer:
+class Accel:
     """
     A class used to represent an MPU6050 Accelerometer.
 
@@ -50,7 +50,7 @@ class Accelerometer:
         while self.running:
             values = self.sensor.get_values()
             values['timestamp'] = time.time()
-            print(ujson.dumps(values))
+            ujson.dumps(values, "accelerometer_data")
             time.sleep(1)
 
     def stop(self):
