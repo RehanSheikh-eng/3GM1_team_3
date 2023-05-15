@@ -61,7 +61,7 @@ class Accel:
 
     def get_corrected_values(self):
         """
-        Retrieve the sensor values and correct for drift using a complementary filter.
+        Retrieve the sensor values and correct for acceleration due to gravity
 
         Returns:
             dict: A dictionary containing the timestamp, corrected accelerometer, and gyroscope values.
