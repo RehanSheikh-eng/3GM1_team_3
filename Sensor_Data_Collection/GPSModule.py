@@ -84,3 +84,16 @@ class GPSModule:
             with open(filepath, 'w') as f:
                 json.dump(data, f)
 
+    def convert_to_degrees(raw_value):
+        """
+        Converts longitude to degree format
+
+        Args:
+            raw_value : Raw longitude/latitude value
+        """
+        decimal_value = raw_value/100.00
+        degrees = int(decimal_value)
+        mm_mmmm = (decimal_value - int(decimal_value))/0.6
+        position = degrees + mm_mmmm
+        position = "%.4f" %(position)
+        return position
