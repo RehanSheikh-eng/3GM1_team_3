@@ -97,3 +97,40 @@ class GPSModule:
         position = degrees + mm_mmmm
         position = "%.4f" %(position)
         return position
+
+
+    def get_relative_position(self, gpgga1, gpgga2):
+        """
+        Calculates the difference in position between two GPGGA strings.
+
+        Args:
+            gpgga1 (str): The first GPGGA string.
+            gpgga2 (str): The second GPGGA string.
+
+        Returns:
+            float: The difference in position in meters.
+        """
+        pos1 = self.parse_gpgga_string(gpgga1)
+        pos2 = self.parse_gpgga_string(gpgga2)
+
+        lat1 = self.convert_to_degrees(float(pos1['latitude']))
+        lon1 = self.convert_to_degrees(float(pos1['longitude']))
+        lat2 = self.convert_to_degrees(float(pos2['latitude']))
+        lon2 = self.convert_to_degrees(float(pos2['longitude']))
+
+        # Convert latitude and longitude from degrees to radians
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+        # Approximate radius of earth in km
+        R = 6371.0
+
+        # Distance
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        distance = R * c * 1000  # convert to meters
+
+        return distance
