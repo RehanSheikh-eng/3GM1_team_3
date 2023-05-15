@@ -66,7 +66,7 @@ class Accel:
             dict: A dictionary containing the timestamp, corrected accelerometer, and gyroscope values.
         """
         values = self.sensor.get_values()
-        values["AcZ"] += 9.81
+        values["AcZ"] -= 9.81
         values['timestamp'] = time.time()
         return values
 
