@@ -39,7 +39,7 @@ while on:
 
     distance_accel += 0.5 * t * (vel_mag[0] + vel_mag[1]) # Distance calculated from accelerometer
     distance_GPS += position_GPS[idx-1] - position_GPS[idx] # Distance calculated from GPS - add appropriate variables
-    distance_fused = (var_accel*distance_accel + var_GPS*distance_GPS) / (var_accel + var_GPS) # Kalman filtered distance
+    distance_fused = (var_GPS*distance_accel + var_accel*distance_GPS) / (var_accel + var_GPS) # Kalman filtered distance
 
     vel_x[0] = vel_x[1]
     vel_y[0] = vel_y[1]
