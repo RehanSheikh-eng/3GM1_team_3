@@ -102,7 +102,10 @@ def calculate_distance(accel, gps, t=1):
         vel_z[0] = vel_z[1]
         vel_mag[0] = vel_mag[1]
 
-        if var_accel < 100: # to prevent numerical overflow
-            var_accel += 1 # to account for drift
-
-        print(distance_fused)
+    if var_accel < 100: # to prevent numerical overflow
+        var_accel += 1 # to account for drift
+    if vel_mag[0] < 0.001:
+        var_accel = sigma # variance resets when wheelchair is stationary
+    
+    idx += 1
+    on = False
