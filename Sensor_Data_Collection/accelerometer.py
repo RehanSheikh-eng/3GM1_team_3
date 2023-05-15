@@ -2,7 +2,6 @@ from machine import I2C, Pin
 import mpu6050
 import time
 import ujson
-
 class Accel:
     """
     A class used to represent an MPU6050 Accelerometer.
@@ -66,5 +65,8 @@ class Accel:
         Returns:
             dict: A dictionary containing the timestamp, corrected accelerometer, and gyroscope values.
         """
-        pass
-    
+        values = self.sensor.get_values()
+        values["AcZ"] += 9.81
+        values['timestamp'] = time.time()
+        return values
+
