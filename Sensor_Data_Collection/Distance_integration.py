@@ -63,3 +63,5 @@ def calculate_distance(accel, gps, t=1):
 
         if vel_mag[0] < 0.001: # SET THRESHOLD THROUGH TESTING
             var_accel = sigma # variance resets when wheelchair is stationary
+
+        return distance_fused
