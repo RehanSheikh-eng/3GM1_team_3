@@ -48,6 +48,8 @@ while on:
 
     if var_accel < 100: # to prevent numerical overflow
         var_accel += 1 # to account for drift
+    if vel_mag[0] < 0.001:
+        var_accel = sigma # variance resets when wheelchair is stationary
     
     idx += 1
     on = False
