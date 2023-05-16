@@ -2,6 +2,7 @@ from machine import I2C, Pin
 import mpu6050
 import time
 import ujson
+
 class Accel:
     """
     A class used to represent an MPU6050 Accelerometer.

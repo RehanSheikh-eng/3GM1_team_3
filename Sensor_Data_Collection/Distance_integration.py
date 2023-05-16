@@ -1,6 +1,8 @@
 import numpy as np
 import time
 import json
+import accelerometer
+import GPSModule
 
 def calculate_distance(accel, gps, t=1):
     """
