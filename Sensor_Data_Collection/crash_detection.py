@@ -21,4 +21,6 @@ def crash_detection(accel, t = 1):
         acc_mag = math.sqrt(acc_data["AcX"]**2 + acc_data["AcY"]**2 + acc_data["AcZ"]**2)
 
         if acc_mag > 6: # Tuned using collision testing and normal use data
-            # TRIGGER CRASH DETECTION PROTOCOL
+            # TRIGGER CRASH DETECTION PROTOCOL:
+            # 1. TRIGGER BUZZER
+            # 2. RECORD INCIDENT THROUGH L2S2 PIPELINE
