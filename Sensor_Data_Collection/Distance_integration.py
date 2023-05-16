@@ -1,4 +1,4 @@
-import numpy as np
+import math
 import time
 import json
 import accelerometer
@@ -44,7 +44,7 @@ def calculate_distance(accel, gps, t=1):
         vel_y[1] = vel_y[0] + (0.5 * t * (prev_acc_y + acc_y))
         vel_z[1] = vel_z[0] + (0.5 * t * (prev_acc_z + acc_z))
 
-        vel_mag[1] = np.sqrt(vel_x[1]**2 + vel_y[1]**2 + vel_z[1]**2)
+        vel_mag[1] = math.sqrt(vel_x[1]**2 + vel_y[1]**2 + vel_z[1]**2)
 
         distance_accel += 0.5 * t * (vel_mag[0] + vel_mag[1]) # Distance calculated from accelerometer
 
