@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 # Load the data from CSV file
 PATH_TO_FILE = "C:/Users/relic/Documents/School/Engineering_Cam/Part IIA/3GM1/Machine_Learning/Fake_Autoencoder_Data.csv"
@@ -26,7 +27,10 @@ df['variance_distance_from_home_7days'] = df['Distance from home (average)/day']
 # Fill NaN values with appropriate values
 df = df.fillna(method='bfill')
 
+scaler = MinMaxScaler()
+df[df.columns] = scaler.fit_transform(df[df.columns])
+
 # Save the dataframe to a new CSV file
 df.to_csv('clean_data.csv', index=False)
 
-print(df)
+print(df.head(10))
