@@ -1,10 +1,7 @@
 import math
-import time
-import json
-import accelerometer
-import GPSModule
+import utime as time
 
-def calculate_distance(accel, gps, t=1):
+def start_distance_intergration(accel, gps, time_step=1, DEBUG=True):
     """
     Calculate the distance traveled using accelerometer and GPS data.
 
@@ -32,8 +29,6 @@ def calculate_distance(accel, gps, t=1):
     var_GPS = sigma
 
     while True:
-        time.sleep(t)
-
         acc_data = accel.get_corrected_values()  # Get accelerometer data IMPLEMENT THIS 
 
         prev_acc_x, prev_acc_y, prev_acc_z = prev_acc_data['AcX'], prev_acc_data['AcY'], prev_acc_data['AcZ']
@@ -66,4 +61,16 @@ def calculate_distance(accel, gps, t=1):
         if vel_mag[0] < 0.001: # SET THRESHOLD THROUGH TESTING
             var_accel = sigma # variance resets when wheelchair is stationary
 
-        return distance_fused
+        if DEBUG:
+            print(f"Distance GPS: {distance_GPS}m" )
+            print(f"Distance Accel: {distance_accel}m" )
+            print(f"Distance Fused: {distance_fused}m" )
+
+        #######################
+        #
+        #   TO DO: SEND DISTANCE FUSE TO L2S2
+        #
+        #######################
+        time.sleep(time_step)
+
+

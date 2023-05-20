@@ -20,17 +20,4 @@ class DistanceSensor:
             self.average_distance += self.sensor.read()
         return ((int(self.average_distance) / MA_order) - 52) # Offset needed for calibration
     
-    def print_distance(self):
-        while True:
-            print("Distance:", self.get_smooth_distance(), "mm")
-    
-    def start_crash_prevention(self, MA_order = 3):
-        while True:
-            if self.get_smooth_distance(MA_order) < 200:
-                print("CRASH RISK!")
-                break
-                # REPLACE WITH CODE TO TURN ON BRAKES/TURN OFF MOTOR
-        
-    
-distance_sensor = DistanceSensor(id = 0, sda = 0, scl = 1)
-distance_sensor.start_crash_prevention()
+
