@@ -12,12 +12,12 @@ class GPSModule:
         if self.uart.any():
             line = self.uart.readline()
             if line:
-                data = self.parse_gpgga_string(line)
+                data = self.parse_gngga_string(line)
                 return data
         return None
 
-    def parse_gngga_string(self, gpgga_string):
-        components = gpgga_string.decode().split(",")
+    def parse_gngga_string(self, gngga_string):
+        components = gngga_string.decode().split(",")
         if "GNGGA" in components[0]:
             timestamp = components[1]
             latitude = self.convert_to_degrees(float(components[2]))
@@ -37,3 +37,18 @@ class GPSModule:
         position = degrees + mm_mmmm
         position = "%.4f" %(position)
         return position
+
+    def get_relative_position(self, data1, data2):
+        R = 6371e3  # Earth's radius in meters
+        lat1 = radians(float(data1["latitude"]))
+        lon1 = radians(float(data1["longitude"]))
+        lat2 = radians(float(data2["latitude"]))
+        lon2 = radians(float(data2["longitude"]))
+
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return R * c  # Output distance in meters
