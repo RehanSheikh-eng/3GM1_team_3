@@ -45,7 +45,7 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
                 gps_distance = gps.get_relative_position(previous_gps_data, gps_data)
                 
                 # Check if we have a potential crash
-                if jerk > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
+                if jerk > 5 and acc_mag > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
                     # TRIGGER CRASH DETECTION PROTOCOL:
                     # 1. TRIGGER BUZZER
                     # 2. RECORD INCIDENT THROUGH L2S2 PIPELINE
