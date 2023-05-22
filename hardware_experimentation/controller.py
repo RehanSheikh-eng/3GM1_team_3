@@ -74,4 +74,30 @@ def positionToAngularVelocity(x,posAngVelAmplitude = 2,posAngVelOffset = -0.2,po
         return 0
 
 
+def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1):
+    """
+    this function takes in the desired speed and and angular velocity signals and calculates the motor input signals
+
+    Parameters
+    :param v: desired speed ( forwards is positive)
+    :param omega: desired angular velocity, positive when vector points upwards)
+    :param l: length of axle ( left to right wheel)
+    :param wheelRadius: radius of wheelchair tyre
+    :param motorVoltageConstant: constant k where V = k * angular velocity of wheel
+
+    :return motorLeft_set: desired Left motor voltage
+    :return motorRight_set: desired Right motor voltage
+
+    """
+    signalGain = 1 # change this to keep the range as desired
+    v, omega = v * signalGain, omega * signalGain
+    leftWheelSpeed = v - omega*l/2
+    rightWheelSpeed = v + omega*l/2
+    leftWheelAngVel = leftWheelSpeed / wheelRadius
+    rightWheelAngVel = rightWheelSpeed / wheelRadius
+    leftMotorSignal = leftWheelAngVel * motorVoltageConstant
+    rightMotorSignal = rightWheelAngVel * motorVoltageConstant
+    return leftMotorSignal, rightMotorSignal
+
+
 

@@ -15,9 +15,17 @@ assert(controller.positionToSpeed(0,2,3,5) == 0)
 assert(round(controller.positionToSpeed(1,1,1,1),4) == 0.9640)
 assert(round(controller.positionToSpeed(-2,2,3,4,2,3,4),6) == -1.999818)
 
+#test positionToSpeed function
 assert(controller.positionToAngularVelocity(0,2,3,5) == 0)
 assert(round(controller.positionToAngularVelocity(1,1,1,1),4) == 0.9640)
 assert(round(controller.positionToAngularVelocity(-2,2,3,4,2,3,4),6) == -1.999818)
+
+assert(round(controller.findMotorSignalsFromSetSpeeds(2,0,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1)[0],4) == 13.3333)
+assert(round(controller.findMotorSignalsFromSetSpeeds(2,0,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1)[1],4) == 13.3333)
+assert(round(controller.findMotorSignalsFromSetSpeeds(0,2,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1)[0],4) == -3.3333)
+assert(round(controller.findMotorSignalsFromSetSpeeds(0,2,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1)[1],4) == 3.3333)
+assert(round(controller.findMotorSignalsFromSetSpeeds(2,2,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1)[0],4) == 10)
+assert(round(controller.findMotorSignalsFromSetSpeeds(2,2,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1)[1],4) == 16.6667)
 
 if visualisation == True:
     x = np.linspace(-20,20,100)
