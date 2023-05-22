@@ -5,10 +5,10 @@ FOR MICROPYTHON (TO BE RUN ON PICO)
 import L2S2SPItest as L2S2
 
 # Test data
-GPS_longitude = 69
+GPS_longitude = "69"
 
 # Configure wifi
-payload_set_wifi = bytearray("AndroidAP|wtdm1984".encode("utf-8"))
+payload_set_wifi = bytearray("AndroidAP0DE9|tgir1565".encode("utf-8"))
 L2S2.spiToL2S2(5, payload_set_wifi)
 
 # Configure field ID
@@ -26,10 +26,12 @@ def get_payload(field_id, type, content, units = None):
     '''
     See Page 12 of "Instrument to MMDC" document for type code
     '''
-    payload_str =  field_id + "|" + type + "|" + str(content) + "|" + units
-    return bytearray(payload_str.encode("utf-8"))
+    _type = bytearray(1)
+    _type[0] = type
+    payload =  bytearray(field_id.encode("utf-8")) + _type + bytearray(content.encode("utf-8")) + bytearray(units.encode("utf-8"))
+    return payload
 
-payload_test = get_payload(field_id, type = "3", content = GPS_longitude, units = "degrees")
+payload_test = get_payload(field_id, type = "5", content = GPS_longitude, units = "degrees")
 
 # Send data
 L2S2.spiToL2S2(150, payload = payload_test)
