@@ -332,8 +332,8 @@ spi1cs.value(1)
 #print(myTimeNow(),"Calculated CRC ", " ".join('{:02x}'.format(x) for x in crc.to_bytes(2,'little')))
 
 while (1):
-    spiToL2S2(150, payload1)
-    spiToL2S2(99, payload2)
+    spiToL2S2(150, payload1) # Command number, Message
+    spiToL2S2(99, payload2) # 99 takes 3 bytes
     spiToL2S2(99, payload3)
     spiToL2S2(99, payload4)
     

@@ -279,6 +279,8 @@ violet = (143, 0, 255)
 # Define the number of steps to use between each colour
 num_steps = 5
 
+payload_set_wifi = bytearray("AndroidAP|wtdm1984".encode("utf-8"))
+spiToL2S2(5, payload_set_wifi)
 
 while True:
     # Loop through each colour of the rainbow and smoothly transition between them
