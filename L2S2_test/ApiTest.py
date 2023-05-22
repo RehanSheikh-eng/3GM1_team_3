@@ -1,3 +1,7 @@
+'''
+FOR PYTHON (TO BE RUN ON LAPTOP)
+'''
+
 from datetime import datetime, timedelta
 import requests
 import inspect
@@ -333,7 +337,12 @@ def user_read_for_portal_record(record_id):
     pprint(response_json['UserReadForPortalRecordResult'])
 
 
-template_list_active()
+#template_list_active()
+GPS_longitude = 69 # Test data
+record_id = "110" # Patient: Minnie Mouse
+plate_template_id = "6e0485b5-cd17-4438-aff8-afe0578ed71f" # Plate: Group_3_Production
+control_id = [{'name' : 'GPSLongitude', 'value' : str(GPS_longitude)}]
+data_create(record_id, plate_template_id, control_id)
 
 # record_search()
 
