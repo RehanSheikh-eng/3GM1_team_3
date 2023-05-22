@@ -22,7 +22,7 @@ control_id = "4" # Textbox: GPSLongitude
 field_id = get_field_id(record_id, plate_template_id, control_id)
 
 # Configure payload
-def get_payload(field_id, type, content, units = None):
+def get_payload_str(field_id, type, content, units = None):
     '''
     See Page 12 of "Instrument to MMDC" document for type code
     '''
@@ -31,7 +31,7 @@ def get_payload(field_id, type, content, units = None):
     payload =  bytearray(field_id.encode("utf-8")) + _type + bytearray(content.encode("utf-8")) + bytearray(units.encode("utf-8"))
     return payload
 
-payload_test = get_payload(field_id, type = "5", content = GPS_longitude, units = "degrees")
+payload_test = get_payload_str(field_id, type = "5", content = GPS_longitude, units = "degrees")
 
 # Send data
 L2S2.spiToL2S2(150, payload = payload_test)
