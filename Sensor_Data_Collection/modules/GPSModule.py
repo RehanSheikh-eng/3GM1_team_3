@@ -12,6 +12,7 @@ class GPSModule:
         if self.uart.any():
             line = self.uart.readline()
             if line:
+                print(line)
                 data = self.parse_gngga_string(line)
                 return data
         return None
@@ -20,15 +21,17 @@ class GPSModule:
         components = gngga_string.decode().split(",")
         if "GNGGA" in components[0]:
             timestamp = components[1]
-            latitude = self.convert_to_degrees(float(components[2]))
-            longitude = self.convert_to_degrees(float(components[4]))
-            return {
-                "timestamp": timestamp,
-                "latitude": latitude,
-                "longitude": longitude
-            }
-        else:
-            return None
+            latitude = components[2]
+            longitude = components[4]
+            if latitude and longitude:  # Ensure the fields are not empty
+                latitude = self.convert_to_degrees(float(latitude))
+                longitude = self.convert_to_degrees(float(longitude))
+                return {
+                    "timestamp": timestamp,
+                    "latitude": latitude,
+                    "longitude": longitude
+                }
+        return None
 
     def convert_to_degrees(self, raw_value):
         decimal_value = raw_value/100.00
