@@ -2,7 +2,7 @@
 FOR MICROPYTHON (TO BE RUN ON PICO)
 '''
 
-import L2S2SPITest_rainbow as L2S2
+import L2S2_simon as L2S2
 
 # Test data
 GPS_longitude = "69"
