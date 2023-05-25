@@ -9,28 +9,58 @@ class GPSModule:
         self.uart.init(baud_rate, bits=8, parity=None, stop=1)
 
     def get_data(self):
-        if self.uart.any():
-            line = self.uart.readline()
-            if line:
-                print(line)
-                data = self.parse_gngga_string(line)
-                return data
+        data = b''
+        while self.uart.any():
+            data += self.uart.readline()
+        if data:
+            try:
+                sentences = data.decode().split('\r\n')  # split data into separate sentences
+                for sentence in sentences:
+                    if sentence:
+                        #print(sentence)
+                        parsed_data = self.parse_gpgga_string(sentence)
+                        if parsed_data is not None:
+                            return parsed_data
+                        
+            except UnicodeError:
+                print("Error: Unicode Error")
+                
         return None
 
-    def parse_gngga_string(self, gngga_string):
-        components = gngga_string.decode().split(",")
-        if "GNGGA" in components[0]:
-            timestamp = components[1]
-            latitude = components[2]
-            longitude = components[4]
-            if latitude and longitude:  # Ensure the fields are not empty
-                latitude = self.convert_to_degrees(float(latitude))
-                longitude = self.convert_to_degrees(float(longitude))
-                return {
-                    "timestamp": timestamp,
-                    "latitude": latitude,
-                    "longitude": longitude
-                }
+
+    def parse_gpgga_string(self, gpgga_string):
+        try:
+            components = gpgga_string.split(",")
+            #print(components)
+        except UnicodeError:
+            print("Error: Unable to decode string.")
+            return None
+        except AttributeError:
+            print("Error: The input is not a string.")
+            return None
+
+        if "GPRMC" in components[0]:
+            try:
+                timestamp = components[1]
+                latitude = components[2] if "GPGGA" in components[0] else components[3]
+                longitude = components[4] if "GPGGA" in components[0] else components[5]
+
+                if latitude and longitude:  # Ensure the fields are not empty
+                    latitude = self.convert_to_degrees(float(latitude))
+                    longitude = self.convert_to_degrees(float(longitude))
+                else:
+                    print("Error: Latitude or Longitude data missing.")
+                    return None
+            except (IndexError, ValueError):
+                print("Error: Invalid NMEA sentence.")
+                return None
+
+            return {
+                "timestamp": timestamp,
+                "latitude": latitude,
+                "longitude": longitude
+            }
+
         return None
 
     def convert_to_degrees(self, raw_value):
@@ -55,3 +85,4 @@ class GPSModule:
         c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
         return R * c  # Output distance in meters
+

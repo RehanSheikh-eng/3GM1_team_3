@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 # next define the necessary functions
 
+
 def positionToSpeed(x,posSpeedAmplitude = 2,posSpeedOffset = -0.2,posSpeedFreq = 0.2,\
                      negSpeedAmplitude = 2, negSpeedOffset = 0.2,negSpeedFreq = 0.2 ):
     """ this function maps the position on the joystick speed input to a desired speed using
@@ -98,6 +99,34 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.15,motorVoltag
     leftMotorSignal = leftWheelAngVel * motorVoltageConstant
     rightMotorSignal = rightWheelAngVel * motorVoltageConstant
     return leftMotorSignal, rightMotorSignal
+
+
+
+# workflow
+
+# extract joystick input
+joystickSpeedInput = 0
+joystickAngularVelocityInput = 0
+
+
+# extract joystick acceleration
+
+# function to filter input
+# ana to fill 
+
+# calc demand speed and angular velocity
+demandSpeed = positionToSpeed(joystickSpeedInput)
+demandAngularVelocity = positionToAngularVelocity(joystickAngularVelocityInput)
+
+
+
+# calc motor signals 
+leftMotorSignal, rightMotorSignal = findMotorSignalsFromSetSpeeds(demandSpeed,demandAngularVelocity)
+
+# pass signals to motors
+
+
+
 
 
 
