@@ -18,7 +18,7 @@ xPos_vector = []
 yPos_vector = []
 iteration = []
 j = 0
-with open('tremor_analysis/joystickData.txt', 'r') as file:
+with open('tremor_analysis/joystickDataStationary.txt', 'r') as file:
     for line in file:
         j += 1
         nums = ((line.strip().split(','))) # Convert each line to a float and append to the data list
@@ -29,8 +29,10 @@ with open('tremor_analysis/joystickData.txt', 'r') as file:
         yPos_vector.append(values[2])
         iteration.append(j)
  
-plt.plot(iteration,xPos_vector)
+plt.plot(iteration,xPos_vector,label = 'xpos')
+plt.plot(iteration,yPos_vector, label = 'ypos')
 plt.show()
+plt.legend()
 
 print("finish")
 
