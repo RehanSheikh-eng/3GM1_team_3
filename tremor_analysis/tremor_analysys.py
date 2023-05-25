@@ -21,7 +21,7 @@ def generate_sine_wave(frequency, amplitude, duration, sampling_rate):
     t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
     return signal
-def tremor_window_fft(fft_result,fft_freq,tremor_window): #t window is lower then upper bound
+def tremor_window_fft(fft_result,fft_freq,tremor_window): #t window is lower then the upper bound in hz
     new_fft_result=[]
     new_fft_freq=[]
     for i in range(len(fft_freq)):
@@ -45,12 +45,37 @@ def analyze_frequency(signal):
     return dominant_freq
 
 def calculate_intensity(signal):
+    '''the input of this function is a small sample of the signal in the window size.
+     The values have to be positive so i will square the input signal'''
     # Calculate the area under the curve using the trapezoidal rule
-    area = np.trapz(signal)
+    signal_squared= signal*signal
+    area = np.trapz(signal_squared)
     intensity = area / window_size
     return intensity
 
+def extract_tremor_from_signal():
+    ''' this function extracts the intensities that correspond to one tremor, for further analysis.
+    it also has to extract the actual x and y values in oder to extract the dominant frequency.
+    it should returnt the intensities as well as the actual data'''
+    print('tremor identified')
+    return values, intensities
 
+def calculate_tremor_length_intensity(tremor_intensities):
+    length= len(tremor_intensities)*window_size*sampling_rate #length of time of tremor
+    total_intensity=0
+    for i in tremor_intensities:
+        total_intensity += i
+    average_intensity= total_intensity/length
+    return length, average_intensity
+
+def calculate_values_and_append():
+    length, average_intensity = calculate_tremor_length_intensity(tremor_intensities)
+    signal_np = np.array(signal_buffer)  # Convert signal buffer to a numpy array
+    dominant_frequency = analyze_frequency(signal_np)
+
+    dominant_frequency_array.append(dominant_frequency)
+    length_array.append(length)
+    average_intensity_array.append(average_intensity)
 
 # Main loop for signal acquisition and analysis
 #generating sample data
@@ -58,30 +83,44 @@ data1=generate_sine_wave(frequency, amplitude, duration, sampling_rate)
 data2= generate_sine_wave(frequency, amplitude*2, duration/2, sampling_rate)
 input_data =  array.array("h", [0] * num_samples)
 if len(data2)<num_samples:
-    data2zeros = array.array("h", [0] * (num_samples))
+    data2zeros = np.zeros(num_samples)
     for i in range(len(data2)):
-        data2zeros= data2
+        data2zeros[i]= data2[i]
     input_data= data1+data2zeros
 t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
 # Allocate buffer for signal samples
 signal_buffer = array.array("h", [0] * num_samples)
 
 # Acquire signal samples
-signal_buffer = input_data
+#signal_buffer = input_data
+dominant_frequency_array= ()
+length_array=()
+average_intensity_array=()
+tremor_data= ()
+tremor_intensities= ()
+tremor_present=False
 
-# Convert signal buffer to a numpy array
-signal_np = np.array(signal_buffer)
+i=0
+while i <= len(input_data):
+    signal_buffer.append(input_data[i])
+    if len(signal_buffer) >= 50:
+        intensity = calculate_intensity(signal_buffer)
+        if intensity >= intensity_threshold:
+            tremor_present = True
+            tremor_data.append(signal_buffer)
+            tremor_intensities.append(intensity)
+        if tremor_present:
+            if intensity <= intensity_threshold:
+                tremor_present = False
+                calculate_values_and_append()
 
-# Analyze frequency and determine the dominant frequency
-dominant_frequency = analyze_frequency(signal_np)
+        signal_buffer = ()
 
-# Print the dominant frequency
-print("Dominant Frequency: {:.2f} Hz".format(dominant_frequency))
+    i=i+1
 
-# Delay before acquiring the next set of samples
-signal_squared = signal_np*signal_np
-signal_window = signal_squared[-window_size:]
 
-intensity = calculate_intensity(signal_window)
-# Print the calculated area
-print("intensity of section: {:.2f}".format(intensity))
+# Print the analysis outputs
+print("Dominant Frequency: {:.2f} Hz".format(dominant_frequency_array))
+print("length: {:.2f} seconds".format(length_array))
+print("average intensity: {:.2f} units".format(average_intensity_array))
+
