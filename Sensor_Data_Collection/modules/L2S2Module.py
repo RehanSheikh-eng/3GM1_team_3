@@ -10,7 +10,7 @@ class L2S2Module:
         self.set_wifi(wifi_name, wifi_password)
         self.timeout = timeout
         self.spi_bus = spi_bus
-        if L2S2_SPI_BUS == 0:
+        if self.spi_bus == 0:
             self.spi1 = machine.SPI(0,
                         baudrate=100000,
                         polarity=0,
@@ -23,7 +23,7 @@ class L2S2Module:
             self.spi1cs = machine.Pin(6, machine.Pin.OUT)
             print("L2S2 SPI")
             print(machine.SPI(0))
-        if L2S2_SPI_BUS == 1:
+        if self.spi_bus == 1:
             self.spi1 = machine.SPI(1,
                         baudrate=100000,
                         polarity=0,
@@ -39,6 +39,7 @@ class L2S2Module:
             print(machine.SPI(1))
 
         self.spi1cs.value(1)
+        print(self.myTimeNow(), "Startup Successful!")
 
     def myTimeNow(self):
         yr, mt, d, hr, m, s, day, yrday = utime.localtime()
@@ -50,7 +51,7 @@ class L2S2Module:
         s = str(s) if len(str(s)) > 1 else "0" + str(s)
         return yr + "-" + mt + "-" + d + " " + hr + ":" + m + ":" + s
 
-    def CCITT_crc16_false(data: bytes, start, length): # ignoring start and length for now as it wasn't used
+    def CCITT_crc16_false(self, data: bytes, start, length): # ignoring start and length for now as it wasn't used
         table = [ 
             0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF,
             0x1231, 0x0210, 0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B, 0xA35A, 0xD3BD, 0xC39C, 0xF3FF, 0xE3DE,
@@ -78,10 +79,10 @@ class L2S2Module:
 
     def set_wifi(self, wifi_name, wifi_password):
         payload_set_wifi = bytearray((wifi_name + "|" + wifi_password).encode("utf-8"))
-        L2S2.spiToL2S2(5, payload_set_wifi)
+        self.spiToL2S2(5, payload_set_wifi)
 
     def spiToL2S2(self, header, payload):
-        global spi1
+
         hdr = bytearray(header.to_bytes(1,'little'))
         length = bytearray(len(payload).to_bytes(2,'little'))
         crc = CCITT_crc16_false(hdr + length + payload, 0, int(len(hdr + length + payload)))
@@ -96,32 +97,35 @@ class L2S2Module:
         self.spi1cs.value(0)
         replyHeader = b'\x00'
         startTime = time.ticks_ms()
-        while (replyHeader == b'\x00' and time.ticks_diff(time.ticks_ms(), startTime)<(L2S2_TIMEOUT*1000)):
-            spi1cs.value(0) 
-            replyHeader = spi1.read(1)
+        while (replyHeader == b'\x00' and time.ticks_diff(time.ticks_ms(), startTime)<(self.timeout*1000)):
+            self.spi1cs.value(0) 
+            replyHeader = self.spi1.read(1)
             time.sleep_ms(100)
             if replyHeader == b'\x00':
-                spi1cs.value(1)
+                self.spi1cs.value(1)
+        ##### Show response on spi #####
+        replyLength = self.spi1.read(2)
+        replyCRC = self.spi1.read(2)
+        replyLengthVal = int.from_bytes(replyLength, 'little')
+        if replyLengthVal > 0x400:
+            replyLengthVal = 0x400
+        replyPayload = self.spi1.read(replyLengthVal)
+        self.spi1cs.value(1)
 
-        crc = CCITT_crc16_false(replyHeader + replyLength + replyPayload, 0, int(len(replyHeader + replyLength + replyPayload)))
-        print(myTimeNow(),"Reply Header ", " ".join('{:02x}'.format(x) for x in replyHeader))
-        print(myTimeNow(),"Reply Length ", " ".join('{:02x}'.format(x) for x in replyLength))
-        print(myTimeNow(),"Reply CRC ", " ".join('{:02x}'.format(x) for x in replyCRC))
-        print(myTimeNow(),"Reply Payload ", " ".join('{:02x}'.format(x) for x in replyPayload))
-        print(myTimeNow(),"Calculated CRC ", " ".join('{:02x}'.format(x) for x in crc.to_bytes(2,'little')))
+        crc = self.CCITT_crc16_false(replyHeader + replyLength + replyPayload, 0, int(len(replyHeader + replyLength + replyPayload)))
+        print(self.myTimeNow(),"Reply Header ", " ".join('{:02x}'.format(x) for x in replyHeader))
+        print(self.myTimeNow(),"Reply Length ", " ".join('{:02x}'.format(x) for x in replyLength))
+        print(self.myTimeNow(),"Reply CRC ", " ".join('{:02x}'.format(x) for x in replyCRC))
+        print(self.myTimeNow(),"Reply Payload ", " ".join('{:02x}'.format(x) for x in replyPayload))
+        print(self.myTimeNow(),"Calculated CRC ", " ".join('{:02x}'.format(x) for x in crc.to_bytes(2,'little')))
 
         if crc.to_bytes(2,'little') == replyCRC :
-            print(myTimeNow(),"Received: Header ", " ".join('{:02x}'.format(x) for x in replyHeader), "Payload ", " ".join('{:02x}'.format(x) for x in replyPayload))
+            print(self.myTimeNow(),"Received: Header ", " ".join('{:02x}'.format(x) for x in replyHeader), "Payload ", " ".join('{:02x}'.format(x) for x in replyPayload))
             return replyHeader, replyPayload
         else:
             print(myTimeNow(),"L2S2 Timeout or CRC error")
             time.sleep(1)
             return b'\x00', b'\x00'
-
-
-
-
-
 
     @staticmethod
     def get_field_id(record_id, plate_template_id, control_id):
@@ -130,23 +134,35 @@ class L2S2Module:
     @staticmethod
     def get_payload_int(field_id, type, content, units = None):
         __field__ = bytearray(field_id.encode("utf-8"))
-        
-        if type == 2:
-            __type__ = bytearray([0x02])
-        else:
-            print("TypeError: Incorrect type for function")
-        
-        __content__ = content.to_bytes(4,"little")
+
+        #Creation of the datatype of content as byte:
+        _type_b = bytearray(1)
+        _type_b[0]=_type
+
+        #Creation of the content as bytearray (here content is an int) 
+        #Need to make if options for different datatypes
+        if (_type == 1):
+            _content_b = bytearray([0x00])
+            _content_b[0] = _content
+        elif (_type == 2):
+            _content_b = _content.to_bytes(4,'little')
+        elif (_type == 3):
+            _content_b = _content.to_bytes(8,'little')
+        elif (_type == 4):
+            _content_b = _content.to_bytes(8,'little') #seconds since 1st Jan 1970, held as a long (64-bit C type time_t)
+        elif (_type == 5):
+            _content_b = bytearray((_content + '\0').encode("utf-8"))
+
         __units__ = bytearray(units.encode("utf-8"))
 
-        payload =  __field__ + __type__ + __content__ + __units__
+        payload =  __field__ + _type_b + __content_b + __units__
         return payload
 
-    def send_data(self, record_id, plate_template_id, control_id, type, content, units = None):
+    def send_data(self, record_id, plate_template_id, control_id, _type, content, units = None):
         field_id = self.get_field_id(record_id, plate_template_id, control_id)
-        payload_test = self.get_payload_int(field_id, type, content, units)
-        L(150, payload = payload_test)
+        payload_test = self.get_payload_int(field_id, _type, content, units)
+        return self.spiToL2S2(header=150, payload=payload_test)
 
 # Usage:
 #l2s2_module = L2S2Module("AndroidAP", "ahmed123")
-#l2s2_module.send_data("110", "6e0485b5-cd17-4438-aff8-afe0578ed71f", "4", type = 5, content = "69", units = "degrees")
+#l2s2_module.send_data("110", "6e0485b5-cd17-4438-aff8-afe0578ed71f", "4", _type = 5, content = "69", units = "degrees")
