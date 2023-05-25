@@ -40,6 +40,7 @@ def main():
 
         # Analyze frequency and determine the dominant frequency
     dominant_frequency = analyze_frequency(signal_np)
+    return dominant_frequency
 
 
 # Run the main function
@@ -51,5 +52,5 @@ sampling_rate = 1000  # Number of samples per second
 
 input_data = (generate_sine_wave(frequency, amplitude, duration, sampling_rate) + generate_sine_wave(frequency/2, amplitude*2, duration, sampling_rate))
 t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
-main()
-print("Dominant Frequency: {:.2f} Hz".format(dominant_frequency))
+dominant_frequency = main()
+#print("Dominant Frequency: {:.2f} Hz".format(dominant_frequency))
