@@ -20,9 +20,13 @@ def main():
         if data is not None:
             with open('gps_data.txt', 'a') as f:
                 f.write(f"{data['timestamp']},{data['latitude']},{data['longitude']}\n")
+                print(f"Timestamp: {data['timestamp']}")
+                print(f"Latitude: {data['latitude']}")
+                print(f"Longitude: {data['longitude']}")
                 if data_prev is not None:
                     distance = gps_module.get_relative_position(data_prev, data)
                     f.write(f"Relative position in meters: {distance}\n")
+                    print(f"Relative position: {distance}")
 
             data_prev = data
 
