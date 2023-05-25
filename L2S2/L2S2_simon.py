@@ -5,14 +5,14 @@ import time
 def setL2S2SPI():
     global spi1
     spi1 = machine.SPI(1,
-                    baudrate=100000,
-                    polarity=0,
-                    phase=1,
-                    bits=8,
-                    firstbit=machine.SPI.MSB,
-                    sck=machine.Pin(10),
-                    mosi=machine.Pin(11),
-                    miso=machine.Pin(12))
+                       baudrate=100000,
+                       polarity=0,
+                       phase=1,
+                       bits=8,
+                       firstbit=machine.SPI.MSB,
+                       sck=machine.Pin(10),
+                       mosi=machine.Pin(11),
+                       miso=machine.Pin(12))
     
 def boot_L2S2():
     global L2S2_TIMEOUT
