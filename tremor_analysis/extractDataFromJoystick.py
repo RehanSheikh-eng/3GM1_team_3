@@ -28,17 +28,19 @@ timeStamps = []
 
 Joystick1 = Joystick("GP28","GP27")
 i = 0
+freq = 100 # Hz
+duration = 8 # seconds
 startTime = utime.time()
 #print(startTime)
-for q in range(0,800):
+for q in range(0,freq*duration):
     #print(endTime)
     utime.sleep(1/100)
     data = Joystick1.get_values()
     xPos.append(data[0])
     yPos.append(data[1])
 
-    
-print(800/(utime.time()-startTime))
+print("Average Frequency")
+print((freq*duration)/(utime.time()-startTime))
 
 if data is not None:
         with open('tremor_simulator_try.txt', 'a') as f:

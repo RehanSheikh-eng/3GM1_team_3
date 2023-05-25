@@ -31,8 +31,11 @@ with open('tremor_analysis/tremor_simulator_100HZ.txt', 'r') as file:
  
 plt.plot(iteration,xPos_vector,label = 'xpos')
 plt.plot(iteration,yPos_vector, label = 'ypos')
-plt.show()
 plt.legend()
+plt.show()
+
+# ypos is speed
+# xpos is angular speed
 
 print("finish")
 
