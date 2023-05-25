@@ -12,18 +12,17 @@ def main():
                     tx_pin_id=GPS_TX_PIN,
                     rx_pin_id=GPS_RX_PIN
                     )
+
     data_prev = None
 
     while True:
         data = gps_module.get_data()
         if data is not None:
-            print(f"Timestamp: {data['timestamp']}")
-            print(f"Latitude: {data['latitude']}")
-            print(f"Longitude: {data['longitude']}")
-
-            if data_prev is not None:
-                distance = gps_module.get_relative_position(data_prev, data)
-                print(f"Relative position in meters: {distance}")
+            with open('gps_data.txt', 'a') as f:
+                f.write(f"{data['timestamp']},{data['latitude']},{data['longitude']}\n")
+                if data_prev is not None:
+                    distance = gps_module.get_relative_position(data_prev, data)
+                    f.write(f"Relative position in meters: {distance}\n")
 
             data_prev = data
 
@@ -31,3 +30,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
