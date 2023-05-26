@@ -1,6 +1,6 @@
 from machine import I2C, Pin
-import mpu6050
-import time
+from lib import mpu6050
+import utime as time
 import ujson
 
 class Accel:
@@ -20,7 +20,7 @@ class Accel:
     -------
     """
 
-    def __init__(self, sda_pin=8, scl_pin=9):
+    def __init__(self, i2c_id=0, sda_pin=8, scl_pin=9):
         """
         Constructs all the necessary attributes for the accelerometer object.
 
@@ -31,8 +31,9 @@ class Accel:
         scl_pin : int, optional
             the GPIO pin number used for the I2C clock line (SCL)
         """
-        self.i2c = I2C(1, sda=Pin(sda_pin), scl=Pin(scl_pin))
-        self.sensor = mpu6050.accel(self.i2c)
+        self.i2c = I2C(i2c_id, sda=Pin(sda_pin), scl=Pin(scl_pin))
+        print(self.i2c)
+        self.sensor = mpu6050.MPU(self.i2c)
         self.running = False
 
     def get_corrected_values(self):
@@ -42,8 +43,9 @@ class Accel:
         Returns:
             dict: A dictionary containing the timestamp, corrected accelerometer, and gyroscope values.
         """
-        values = self.sensor.get_values()
-        values["AcZ"] -= 9.81
-        values['timestamp'] = time.time()
+        values = self.sensor.read_sensors_scaled()
+        #values[2] -= 9.81
+        #values['timestamp'] = time.time()
         return values
+
 
