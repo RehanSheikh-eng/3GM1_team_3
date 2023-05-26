@@ -37,7 +37,7 @@ def start_crash_prevention(distance_sensor, motor, speaker, joystick, MA_order=3
             speaker.play(tune = 750, duration = 0.1)
             t = gap_width
             posSpeedAmplitude = distance/500 # scale joystick gain according to distance from object
-        elif distance < 500 and stick_change < 0.1 and joystick_y_positions[2] > 0.975 :
+        elif distance < 500 and stick_change < 0.1 and joystick_y_positions[2] > 0.975:
             motor.disable()
             time.sleep(5)
             motor.enable()
