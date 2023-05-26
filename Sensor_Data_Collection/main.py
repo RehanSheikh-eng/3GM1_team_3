@@ -1,5 +1,5 @@
 # Import time and thread libs
-import utime
+import utime as time
 import _thread
 
 # Import sensor modules
@@ -7,10 +7,11 @@ from modules.GPSModule import GPSModule
 from modules.AccelerometerModule import Accel
 from modules.DistanceSensorModule import DistanceSensor
 from modules.SittingSwitchModule import SittingSwitch
+from picozero import Speaker
 
 # Import scripts
 from scripts.crash_detection import start_crash_detection
-from scripts.start_crash_prevention import start_crash_prevention
+from scripts.crash_prevention import start_crash_prevention
 from scripts.distance_integration import start_distance_intergration
 from scripts.sitting_duration import start_sitting_duration
 
@@ -34,6 +35,8 @@ GPS_UART_BAUD_RATE = 9600
 GPS_TX_PIN = 4
 GPS_RX_PIN = 5
 
+SPEAKER_PIN = 15
+
 SWITCH_PIN = None
 
 
@@ -54,6 +57,8 @@ gps = GPSModule(uart_id=GPS_UART_ID,
                 )
 
 sitting_switch = SittingSwitch(pin=SWITCH_PIN)
+
+speaker = Speaker(SPEAKER_PIN, duty_factor = 5000) # duty_factor controls volume
 
 
 # Start threads

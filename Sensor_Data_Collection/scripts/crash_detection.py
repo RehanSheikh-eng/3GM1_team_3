@@ -1,7 +1,7 @@
 import math
 import time
 
-def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
+def crash_detection(accel, gps, distance_sensor, current_true_crashes, DEBUG=False, time_step=1):
     """
     Crash detection routine using accelerometer, GPS, and distance sensor data.
 
@@ -48,8 +48,9 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
                 if jerk > 5 and acc_mag > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
                     # TRIGGER CRASH DETECTION PROTOCOL:
                     # 1. TRIGGER BUZZER
-                    # 2. RECORD INCIDENT THROUGH L2S2 PIPELINE
-                    print("Crash Detected")
+                    current_true_crashes += 1
+                    if DEBUG:
+                        print("Crash Detected")
 
             # Store previous data
             previous_gps_data = gps_data
