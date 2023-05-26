@@ -102,8 +102,40 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.15,motorVoltag
 
 
 
-# workflow
+# other functions
 
+# create stop mechanism
+
+def stopIfPullBackDetected(ypos,freq):
+
+    """
+    When given in a list of previous y positions at least for 2 seconds then detect if sudden pull back 
+
+    :param @ypos: list of previous speed positions on joystick
+    :out binary signal (-1,0) 
+    if sharp pull back detected then a -1 is sent
+    or button pressed
+    """
+    deltaT = 1 / freq
+    cutoff = 0.5
+    # detect if curr pos is less than -0.5
+    # also rate of change must be big 
+    # in last second must value must be greater than 0.5
+    currPosTest  = (np.average(ypos[-10:-1]) < -0.5 )
+    rate = (ypos[-1] - ypos[-(freq+1)])/(deltaT * freq )
+    print("rate={}".format(rate))
+    rateHigh = (rate < cutoff)
+    lastSecond = ypos[-(freq+50):-1]
+    highestValue = max(lastSecond)
+    print("highest value = {}".format(highestValue))
+    lastSecondPositive = highestValue > 0.3
+    print(currPosTest,rateHigh,lastSecondPositive)
+    if currPosTest and rateHigh and lastSecondPositive:
+        return -1
+    else:
+        return 0
+
+# ------ THIS WILL BE THE MAIN LOOP ----
 # extract joystick input
 joystickSpeedInput = 0
 joystickAngularVelocityInput = 0
@@ -115,17 +147,35 @@ joystickAngularVelocityInput = 0
 # ana to fill 
 
 # calc demand speed and angular velocity
-demandSpeed = positionToSpeed(joystickSpeedInput)
+speedAmpltitude = 1
+
+# code to test stop func
+idx = np.linspace(1,200,200)
+yfake = np.linspace(0.8,-0.8,200)
+plt.plot(idx,yfake)
+plt.show()
+stop = stopIfPullBackDetected(yfake,100)
+print(stop)
+if stop == -1:
+    speedAmpltitude = 0
+    
+    
+demandSpeed = positionToSpeed(joystickSpeedInput,posSpeedAmplitude=speedAmpltitude,negSpeedAmplitude=speedAmpltitude)
 demandAngularVelocity = positionToAngularVelocity(joystickAngularVelocityInput)
 
 
 
 # calc motor signals 
+
 leftMotorSignal, rightMotorSignal = findMotorSignalsFromSetSpeeds(demandSpeed,demandAngularVelocity)
 
 # pass signals to motors
 
 
+print("success")
+
+
+    
 
 
 
