@@ -8,12 +8,12 @@ from defandclasses import *
 
 
 #generated sine wave parameters
-frequency = 20  # Frequency of the sine wave in Hz
+frequency = 70 # Frequency of the sine wave in Hz
 amplitude = 1.0  # Amplitude of the sine wave
 duration = 1.0  # Duration of the signal in seconds
 sampling_rate = 1000  # Number of samples per second
 #lowpass filter parameters
-cutoff_frequency= 50
+cutoff_frequency= 20
 low_alpha = 1 / (2 * math.pi * cutoff_frequency)
 #setting up queue paramteters
 queue_length = 1000  # Length of the queue
