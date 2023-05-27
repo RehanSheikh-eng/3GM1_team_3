@@ -39,7 +39,7 @@ def positionToSpeed(x,posSpeedAmplitude = 2,posSpeedOffset = -0.2,posSpeedFreq =
         return max(0,v)
     elif x < 0:
         # work in negative speed part of graph
-        v = negSpeedAmplitude*math.tanh(((negSpeedFreq * x) +negSpeedOffset))
+        v = negSpeedAmplitude*math.tanh(((negSpeedFreq * x) + negSpeedOffset))
         return min(v,0)
     else:
         return 0

@@ -1,7 +1,7 @@
 import math
 import time
 
-def crash_detection(accel, gps, distance_sensor, current_true_crashes, DEBUG=False, time_step=1):
+def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
     """
     Crash detection routine using accelerometer, GPS, and distance sensor data.
 
@@ -17,6 +17,9 @@ def crash_detection(accel, gps, distance_sensor, current_true_crashes, DEBUG=Fal
     previous_gps_data = None 
     previous_accel_data = None
     jerk = None
+
+    global current_true_crashes
+    current_true_crashes = 0
 
     while True:
         try:
