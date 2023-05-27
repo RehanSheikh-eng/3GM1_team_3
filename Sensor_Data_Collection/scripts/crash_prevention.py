@@ -43,7 +43,6 @@ def start_crash_prevention(distance_sensor, motor, speaker, joystick, MA_order=3
             motor.enable()
             current_total_crashes += 1
             t = time_step
-            # ADD CODE TO TURN ON BRAKES
         else:
             t = time_step
             posSpeedAmplitude = 1
