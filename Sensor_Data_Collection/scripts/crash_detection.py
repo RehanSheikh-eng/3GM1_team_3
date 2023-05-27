@@ -18,6 +18,9 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
     previous_accel_data = None
     jerk = None
 
+    global current_true_crashes
+    current_true_crashes = 0
+
     while True:
         try:
             # Get accelerometer data
@@ -48,8 +51,9 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
                 if jerk > 5 and acc_mag > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
                     # TRIGGER CRASH DETECTION PROTOCOL:
                     # 1. TRIGGER BUZZER
-                    # 2. RECORD INCIDENT THROUGH L2S2 PIPELINE
-                    print("Crash Detected")
+                    current_true_crashes += 1
+                    if DEBUG:
+                        print("Crash Detected")
 
             # Store previous data
             previous_gps_data = gps_data
