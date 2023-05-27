@@ -8,6 +8,7 @@ created on 22/05/23
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from collections import deque
 
 # next define the necessary functions
 
@@ -100,13 +101,7 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.15,motorVoltag
     rightMotorSignal = rightWheelAngVel * motorVoltageConstant
     return leftMotorSignal, rightMotorSignal
 
-
-
-# other functions
-
-# create stop mechanism
-
-def stopIfPullBackDetected(ypos,freq):
+def stopIfPullBackDetected(ypos,freq,i):
 
     """
     When given in a list of previous y positions at least for 2 seconds then detect if sudden pull back 
@@ -121,13 +116,16 @@ def stopIfPullBackDetected(ypos,freq):
     # detect if curr pos is less than -0.5
     # also rate of change must be big 
     # in last second must value must be greater than 0.5
+    ypos = list(ypos)
+    if i>150:
+        print("test")
     currPosTest  = (np.average(ypos[-10:-1]) < -0.5 )
     rate = (ypos[-1] - ypos[-(freq+1)])/(deltaT * freq )
-    print("rate={}".format(rate))
+    #print("rate={}".format(rate))
     rateHigh = (rate < cutoff)
     lastSecond = ypos[-(freq+50):-1]
     highestValue = max(lastSecond)
-    print("highest value = {}".format(highestValue))
+    #print("highest value = {}".format(highestValue))
     lastSecondPositive = highestValue > 0.3
     print(currPosTest,rateHigh,lastSecondPositive)
     if currPosTest and rateHigh and lastSecondPositive:
@@ -135,47 +133,106 @@ def stopIfPullBackDetected(ypos,freq):
     else:
         return 0
 
-# ------ THIS WILL BE THE MAIN LOOP ----
-# extract joystick input
-joystickSpeedInput = 0
-joystickAngularVelocityInput = 0
+def readJoystickValues(simulator = True,listXPOS = None,listYPOS = None,i = None):
+    # write functionality to return xpos,ypos
+    if simulator:
+        return listXPOS[i],listYPOS[i]
 
+    return -1,-1
 
-# extract joystick acceleration
+def readjoystickTextFile(fileName):
+    data = []
+    xPos_vector = []
+    yPos_vector = []
+    iteration = []
+    j = 0
+    with open('tremor_analysis/JoystickTextFiles/{}'.format(fileName), 'r') as file:
+        for line in file:
+            j += 1
+            nums = ((line.strip().split(','))) # Convert each line to a float and append to the data list
+            values = []
+            for i in range(3):
+                values.append(float(nums[i]))
+            xPos_vector.append(values[1])
+            yPos_vector.append(values[2])
+            iteration.append(j)
+    return xPos_vector, yPos_vector
 
-# function to filter input
-# ana to fill 
-
-# calc demand speed and angular velocity
+# other functions
+# INITIALISE KEY VARS
 speedAmpltitude = 1
+angSpeedAmpltitude = 1
+xPosBuffer = [0] * 500
+xPosBuffer = deque(xPosBuffer,maxlen=500)
+yPosBuffer = [0] * 500
+yPosBuffer = deque(yPosBuffer,maxlen=500)
+testx = []
+testy = []
+stops = []
+# ------ THIS WILL BE THE MAIN LOOP ----
+listXPOS, listYPOS = readjoystickTextFile(fileName = 'sudden_Stop_100hz_try2.txt')
 
-# code to test stop func
-idx = np.linspace(1,200,200)
-yfake = np.linspace(0.8,-0.8,200)
-plt.plot(idx,yfake)
+for i in range(0,len(listYPOS)):
+
+
+    # ------- EXTRACTION PHASE ------
+    # extract joystick input
+    # when simulator is turned on a text file can be inputted
+    joystickAngularVelocityInput,joystickSpeedInput = readJoystickValues(simulator=True,listXPOS= listXPOS,
+    listYPOS= listYPOS,i = i)
+    xPosBuffer.append(joystickAngularVelocityInput)
+    testx.append(joystickAngularVelocityInput)
+    yPosBuffer.append(joystickSpeedInput)
+    testy.append(joystickSpeedInput)
+
+
+    # extract joystick acceleration
+
+    # ------- FILTER PHASE -------
+    # function to filter input
+    # ana to fill 
+
+    # ------- SYSTEM SAFETY MANEOUVERS -------
+    # code to test stop func
+    if False:
+        idx = np.linspace(1,200,200)
+        yfake = np.linspace(0.8,-0.8,200)
+        plt.plot(idx,yfake)
+        plt.show()
+    stop = stopIfPullBackDetected(yPosBuffer,100,i)
+    stops.append(stop)
+    if stop == -1:
+        print(stop)
+        speedAmpltitude = 0
+        angSpeedAmpltitude = 0
+        
+
+
+    # ------ CALCULATE DEMANDED SPEEDS ------
+
+    # calc demand speed and angular velocity
+    demandSpeed = positionToSpeed(joystickSpeedInput,posSpeedAmplitude=speedAmpltitude,negSpeedAmplitude=speedAmpltitude)
+    demandAngularVelocity = positionToAngularVelocity(joystickAngularVelocityInput,posAngVelAmplitude=angSpeedAmpltitude,negAngVelAmplitude=angSpeedAmpltitude)
+
+
+
+    # ------ CALCULATE OUTPUT SIGNALS
+    # calc motor signals 
+
+    leftMotorSignal, rightMotorSignal = findMotorSignalsFromSetSpeeds(demandSpeed,demandAngularVelocity)
+
+    # update key variables 
+
+
+
+plt.plot(testx)
+plt.plot(testy)
+plt.plot(stops)
 plt.show()
-stop = stopIfPullBackDetected(yfake,100)
-print(stop)
-if stop == -1:
-    speedAmpltitude = 0
-    
-    
-demandSpeed = positionToSpeed(joystickSpeedInput,posSpeedAmplitude=speedAmpltitude,negSpeedAmplitude=speedAmpltitude)
-demandAngularVelocity = positionToAngularVelocity(joystickAngularVelocityInput)
+print("program executed")
 
 
-
-# calc motor signals 
-
-leftMotorSignal, rightMotorSignal = findMotorSignalsFromSetSpeeds(demandSpeed,demandAngularVelocity)
-
-# pass signals to motors
-
-
-print("success")
-
-
-    
+        
 
 
 
