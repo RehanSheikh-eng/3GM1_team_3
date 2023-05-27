@@ -73,11 +73,13 @@ class GPSModule:
 
     def get_relative_position(self, data1, data2):
         R = 6371e3  # Earth's radius in meters
-        lat1 = radians(float(data1["latitude"]))
-        lon1 = radians(float(data1["longitude"]))
-        lat2 = radians(float(data2["latitude"]))
-        lon2 = radians(float(data2["longitude"]))
-
+        try:
+            lat1 = radians(float(data1["latitude"]))
+            lon1 = radians(float(data1["longitude"]))
+            lat2 = radians(float(data2["latitude"]))
+            lon2 = radians(float(data2["longitude"]))
+        except TypeError:
+            return 0
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
@@ -85,4 +87,5 @@ class GPSModule:
         c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
         return R * c  # Output distance in meters
+
 
