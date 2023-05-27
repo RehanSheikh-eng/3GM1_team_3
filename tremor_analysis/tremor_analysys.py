@@ -100,7 +100,7 @@ def calculate_values_and_append(tremor_intensities1, signal_buffer1):
 # Main loop for signal acquisition and analysis
 
 # generating sample data
-data1 = generate_sine_wave(frequency, amplitude, duration, sampling_rate)
+data1 = generate_sine_wave(frequency, 0, duration, sampling_rate)
 data2 = generate_sine_wave(frequency, amplitude*7, duration/2, sampling_rate)
 input_data = array.array("h", [0] * num_samples)
 if len(data2) < num_samples:
