@@ -1,87 +1,149 @@
 import array
 import math
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 # Sampling parameters
 sampling_freq = 1000  # Sampling frequency in Hz
 num_samples = 10000    # Number of samples to acquire
-#generated sine wave parameters
-frequency = 5  # Frequency of the sine wave in Hz
+# generated sine wave parameters
+frequency = 15  # Frequency of the sine wave in Hz
 amplitude = 1.0  # Amplitude of the sine wave
 duration = 10.0  # Duration of the signal in seconds
 sampling_rate = 1000  # Number of samples per second
-#analysis variables
-window_size=500 # for calculating intensities- it's the sample number
-tremor_window= (3,17) #bounds of data we are using for analysis in Hz
-intensity_threshold=1.5
+# analysis variables
+window_size = 50  # for calculating intensities- it's the sample number
+tremor_window = (3, 17)  # bounds of data we are using for analysis in Hz
+intensity_threshold = 2
 
-#functions
-def generate_sine_wave(frequency, amplitude, duration, sampling_rate):
-    t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
-    signal = amplitude * np.sin(2 * np.pi * frequency * t)
+
+# functions
+def generate_sine_wave(frequency1, amplitude1, duration1, sampling_rate1):
+    t = np.linspace(0, duration1, int(duration1 * sampling_rate1), endpoint=False)
+    signal = amplitude1 * np.sin(2 * np.pi * frequency1 * t)
     return signal
-def tremor_window_fft(fft_result,fft_freq,tremor_window): #t window is lower then upper bound
-    new_fft_result=[]
-    new_fft_freq=[]
+
+
+def tremor_window_fft(fft_result, fft_freq, tremor_window1):  # t window is lower than the upper bound in hz
+    new_fft_result = []
+    new_fft_freq = []
     for i in range(len(fft_freq)):
-        if abs(fft_freq[i])>= tremor_window[0] and abs(fft_freq[i]) <= tremor_window[1]:
+        if (abs(fft_freq[i]) >= tremor_window1[0]) and (abs(fft_freq[i]) <= tremor_window1[1]):
             new_fft_result.append(fft_result[i])
             new_fft_freq.append(fft_freq[i])
-    return new_fft_result,new_fft_freq
+    return new_fft_result, new_fft_freq
 # Function to perform FFT and find the dominant frequency
+
+
 def analyze_frequency(signal):
     # Perform FFT on the signal
     fft_result = np.fft.fft(signal)
     fft_freq = np.fft.fftfreq(len(signal), 1 / sampling_freq)
-    fft_result,fft_freq= tremor_window_fft(fft_result,fft_freq,tremor_window)
+    plt.plot(fft_freq, fft_result)
+    plt.show()
+    fft_result, fft_freq = tremor_window_fft(fft_result, fft_freq, tremor_window)
 
     # Find the index of the maximum magnitude in the FFT result
-    max_index = np.argmax(np.abs(fft_result))
-
-    # Extract the dominant frequency
-    dominant_freq = abs(fft_freq[max_index])
-
+    if len(fft_result) > 0:
+        max_index = np.argmax(np.abs(fft_result))
+        # Extract the dominant frequency
+        dominant_freq = abs(fft_freq[max_index])
+    else:
+        dominant_freq = 0
     return dominant_freq
 
-def calculate_intensity(signal):
-    # Calculate the area under the curve using the trapezoidal rule
-    area = np.trapz(signal)
-    intensity = area / window_size
-    return intensity
 
+def calculate_intensity(signal):
+    '''the input of this function is a small sample of the signal in the window size.
+     The values have to be positive so i will square the input signal'''
+    # Calculate the area under the curve using the trapezoidal rule
+    signal_array = np.array(signal)
+    signal_squared = signal_array*signal_array
+    area = np.trapz(signal_squared)
+    intensity1 = area / window_size
+    return intensity1
+
+
+'''def extract_tremor_from_signal():
+     this function extracts the intensities that correspond to one tremor, for further analysis.
+    it also has to extract the actual x and y values in oder to extract the dominant frequency.
+    it should return the intensities as well as the actual data
+    print('tremor identified')
+    return values1, intensities1'''
+
+
+def calculate_tremor_length_intensity(tremor_intensities1):
+    length = len(tremor_intensities1)*window_size/sampling_rate  # length of time of tremor
+    total_intensity = 0
+    for j in tremor_intensities:
+        total_intensity += j
+    if length != 0:
+        average_intensity = total_intensity/length
+
+    else:
+        average_intensity = 0
+    return length, average_intensity
+
+
+def calculate_values_and_append(tremor_intensities1, signal_buffer1):
+    length, average_intensity = calculate_tremor_length_intensity(tremor_intensities1)
+    signal_np = np.array(signal_buffer1)  # Convert signal buffer to a numpy array
+    dominant_frequency = analyze_frequency(signal_np)
+
+    dominant_frequency_array.append(dominant_frequency)
+    length_array.append(length)
+    average_intensity_array.append(average_intensity)
 
 
 # Main loop for signal acquisition and analysis
-#generating sample data
-data1=generate_sine_wave(frequency, amplitude, duration, sampling_rate)
-data2= generate_sine_wave(frequency, amplitude*2, duration/2, sampling_rate)
-input_data =  array.array("h", [0] * num_samples)
-if len(data2)<num_samples:
-    data2zeros = array.array("h", [0] * (num_samples))
+
+# generating sample data
+data1 = generate_sine_wave(frequency, 0, duration, sampling_rate)
+data2 = generate_sine_wave(frequency, amplitude*7, duration/2, sampling_rate)
+input_data = array.array("h", [0] * num_samples)
+if len(data2) < num_samples:
+    data2zeros = np.zeros(num_samples)
     for i in range(len(data2)):
-        data2zeros= data2
-    input_data= data1+data2zeros
+        data2zeros[i] = data2[i]
+    input_data = data1+data2zeros
 t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
-# Allocate buffer for signal samples
-signal_buffer = array.array("h", [0] * num_samples)
 
-# Acquire signal samples
-signal_buffer = input_data
+# arrays for analysis
+signal_buffer = []
+dominant_frequency_array = []
+length_array = []
+average_intensity_array = []
+tremor_data = []
+tremor_intensities = []
+# initial conditions
+tremor_present = False  # initial cond for the loops to work
+i=0
 
-# Convert signal buffer to a numpy array
-signal_np = np.array(signal_buffer)
+while i <= (len(input_data)-1):
+    signal_buffer.extend([input_data[i]])
+    if len(signal_buffer) >= window_size:
+        intensity = calculate_intensity(signal_buffer)
+        if intensity >= intensity_threshold:
+            tremor_present = True
+            tremor_data.extend([signal_buffer])
+            tremor_intensities.extend([intensity])
+        if tremor_present:
+            if intensity <= intensity_threshold:
+                tremor_present = False
+                calculate_values_and_append(tremor_intensities, signal_buffer)
 
-# Analyze frequency and determine the dominant frequency
-dominant_frequency = analyze_frequency(signal_np)
+        signal_buffer = []
 
-# Print the dominant frequency
-print("Dominant Frequency: {:.2f} Hz".format(dominant_frequency))
+    i = i+1
+if tremor_present:
+    tremor_present = False
+    calculate_values_and_append()
 
-# Delay before acquiring the next set of samples
-signal_squared = signal_np*signal_np
-signal_window = signal_squared[-window_size:]
 
-intensity = calculate_intensity(signal_window)
-# Print the calculated area
-print("intensity of section: {:.2f}".format(intensity))
+# Print the analysis outputs
+print("Dominant Frequency:", dominant_frequency_array)
+print("length:", length_array)
+print("average intensity:", average_intensity_array)
+

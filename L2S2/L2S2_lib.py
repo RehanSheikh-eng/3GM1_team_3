@@ -1,53 +1,29 @@
-
 import machine
 import utime
 import time
-import ustruct
-import sys
-from pimoroni_bus import SPIBus
-
-
-L2S2_SPI_BUS = 1
-L2S2_TIMEOUT = 10
-
-# Assign chip select (CS) pin (and start it high)
-if L2S2_SPI_BUS == 0:
-    spi1cs = machine.Pin(6, machine.Pin.OUT)
-if L2S2_SPI_BUS == 1:
-    spi1cs = machine.Pin(13, machine.Pin.OUT)
-
-spi1cs.value(1)
-setL2S2SPI()
-
+import struct
 
 def setL2S2SPI():
     global spi1
-    if L2S2_SPI_BUS == 0:
-        spi1 = machine.SPI(0,
-                      baudrate=100000,
-                      polarity=0,
-                      phase=1,
-                      bits=8,
-                      firstbit=machine.SPI.MSB,
-                      sck=machine.Pin(18),
-                      mosi=machine.Pin(19),
-                      miso=machine.Pin(16))
-        print("L2S2 SPI")
-        print(machine.SPI(0))
-    if L2S2_SPI_BUS == 1:
-        spi1 = machine.SPI(1,
-                      baudrate=100000,
-                      polarity=0,
-                      phase=1,
-                      bits=8,
-                      firstbit=machine.SPI.MSB,
-                      sck=machine.Pin(10),
-                      mosi=machine.Pin(11),
-                      miso=machine.Pin(12))
-        print("L2S2 SPI")
-        print(machine.SPI(1))
-
-# Stubs
+    spi1 = machine.SPI(1,
+                    baudrate=100000,
+                    polarity=0,
+                    phase=1,
+                    bits=8,
+                    firstbit=machine.SPI.MSB,
+                    sck=machine.Pin(10),
+                    mosi=machine.Pin(11),
+                    miso=machine.Pin(12))
+    
+def boot_L2S2():
+    global L2S2_TIMEOUT
+    L2S2_TIMEOUT = 10
+    # Assign chip select (CS) pin (and start it high)
+    global spi1cs
+    spi1cs = machine.Pin(13, machine.Pin.OUT)
+    spi1cs.value(1)
+    setL2S2SPI()
+    print(myTimeNow(),"Startup")
 
 def myTimeNow():
     yr, mt, d, hr, m, s, day, yrday = utime.localtime()
@@ -85,12 +61,11 @@ def CCITT_crc16_false(data: bytes, start, length): # ignoring start and length f
         crc &= 0xFFFF
     return crc
 
-##### Setup #####
-
-    
 def spiToL2S2(header, payload):
     global spi1
+    global spi1cs
     ### Create packet for sending
+    # Join together bytearrays
     hdr = bytearray(header.to_bytes(1,'little'))
     length = bytearray(len(payload).to_bytes(2,'little'))
     crc = CCITT_crc16_false(hdr + length + payload, 0, int(len(hdr + length + payload)))
@@ -98,8 +73,8 @@ def spiToL2S2(header, payload):
     packetToSend = hdr + length + crcarray + payload
     print(myTimeNow(),"Sending ", " ".join('{:02x}'.format(x) for x in packetToSend))
     
+
     ##### Reads spy response ######
-    
     spi1cs.value(0)
     spi1.write(packetToSend)
     spi1cs.value(1)
@@ -114,6 +89,14 @@ def spiToL2S2(header, payload):
         if replyHeader == b'\x00':
             spi1cs.value(1) # GSL
 
+    ##### Show response on spi #####
+    replyLength = spi1.read(2)
+    replyCRC = spi1.read(2)
+    replyLengthVal = int.from_bytes(replyLength, 'little')
+    if replyLengthVal > 0x400:
+        replyLengthVal = 0x400
+    replyPayload = spi1.read(replyLengthVal)
+    spi1cs.value(1)
     
     crc = CCITT_crc16_false(replyHeader + replyLength + replyPayload, 0, int(len(replyHeader + replyLength + replyPayload)))
     print(myTimeNow(),"Reply Header ", " ".join('{:02x}'.format(x) for x in replyHeader))
@@ -129,4 +112,53 @@ def spiToL2S2(header, payload):
         print(myTimeNow(),"L2S2 Timeout or CRC error")
         time.sleep(1)
         return b'\x00', b'\x00'
-    
+
+
+## Takes _record_id, plate_id, _control_id as strings; _type as number 1:5; content of different types; _units as string;
+## Datatypes: 1 = bool; 2 = int; 3 = double; 4 = datetime; 5 = string
+def data_send(_record_id, _plate_id, _control_id, _type, _content, _units):
+    #Payload_diode init
+    payload_diode = bytearray([0x00, 0x00, 0xFF, 0x00]) #red = (0, 0, 255)
+
+    #Diode on
+    spiToL2S2(99, payload_diode)
+
+    #Creation of the field id as bytearray
+    _field_id = _record_id + '|' + _plate_id + '|' + _control_id + '\0' # string terminator (see the MMDC doc)
+    _field_id_b = bytearray(_field_id.encode("utf-8"))
+
+    #Creation of the datatype of content as byte:
+    _type_b = bytearray(1)
+    _type_b[0]=_type
+
+    #Creation of the content as bytearray (here content is an int) 
+    #Need to make if options for different datatypes
+    if (_type == 1):
+        _content_b = bytearray([0x00])
+        _content_b[0] = _content
+    elif (_type == 2):
+        _content_b = _content.to_bytes(4,'little')
+    elif (_type == 3):
+        _content_b = bytearray(struct.pack("d", _content))  
+        print(_content_b)
+    elif (_type == 4):
+        _content_b = _content.to_bytes(8,'little') #seconds since 1st Jan 1970, held as a long (64-bit C type time_t)
+        print(_content_b)
+    elif (_type == 5):
+        _content_b = bytearray((_content + '\0').encode("utf-8"))
+
+
+    #Creation of the unit name as bytearray
+    _units_b = bytearray(_units.encode("utf-8"))
+
+    #Concatenation of the payload bytearray
+    _payload=_field_id_b + _type_b + _content_b #+ _units_b
+    print(f"PAYLOAD: {_payload}")
+    #Sending of the payload to the server
+    spiToL2S2(150, _payload)
+
+    #Payload_diode off
+    payload_diode = bytearray([0x00, 0x00, 0x00, 0x00]) #off = (0, 0, 0)
+
+    #Diode off
+    spiToL2S2(99, payload_diode)
