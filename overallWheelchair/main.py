@@ -3,7 +3,6 @@
 PROCESS 1 PSEUDOCODE
 '''
 
-
 # ---- STAGE 1. IMPORT SCRIPTS and initialise classes------
 # initalise l2s2
 
@@ -24,16 +23,12 @@ PROCESS 1 PSEUDOCODE
 # sudden joystick pullback stop
 
 # ---- STAGE 4 - FILTERING AND TREMOR TRACKING ----
-# update joystick pos from filter
-# record tremor data 
+
 
 # ---- STAGE 5 - CALCULATE MOTOR DESIRED SIGNALS FROM CONTROL THEORY ------
-# find speeds from pos
-# find motor signals from speeds
 
 
 # ----- STAGE 6 - SEND SIGNALS TO MOTOR -----
-#updateMotorSignals()
 
 # ----- STAGE 7 - USAGE TRACKING ------
 # estimate speed
