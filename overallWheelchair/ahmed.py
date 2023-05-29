@@ -25,7 +25,6 @@ parking = False
 cur_time = 0
 
 # FUNCTION
-
 def startCrashPrevention(distance, speed, speed_threshold = 1, beep_width = 100):
     global current_total_crashes
     global speedAmplitude

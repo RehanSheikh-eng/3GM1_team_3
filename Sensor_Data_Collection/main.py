@@ -6,9 +6,8 @@ import math
 from Sensor_Data_Collection.modules.GPSModule import GPSModule
 from Sensor_Data_Collection.modules.AccelerometerModule import Accel
 from Sensor_Data_Collection.modules.L2S2Module import L2S2Module
-#from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
-#from Sensor_Data_Collection.modules.SittingSwitchModule import SittingSwitch
-#from picozero import Speaker
+from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
+from Sensor_Data_Collection.modules.SittingSwitchModule import SittingSwitch
 
 # Debug mode
 DEBUG = True 
