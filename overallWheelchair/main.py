@@ -3,6 +3,59 @@
 PROCESS 1 PSEUDOCODE
 '''
 
+# tim code
+from motor_controller import Motor
+from joystick import Joystick
+from machine import Timer, Pin
+from collections import deque
+
+import time
+
+speedAmpltitude = 1
+angSpeedAmpltitude = 1
+xPosBuffer = [0] * 500
+xPosBuffer = deque(xPosBuffer,maxlen=500)
+yPosBuffer = [0] * 500
+yPosBuffer = deque(yPosBuffer,maxlen=500)
+testx = []
+testy = []
+stops = []
+filtered_signal = [] 
+startTime = round(utime.time())
+Bfilter = ButterworthFilter(9, 3, 0.01)
+samplingFrequency = 100 
+resetTime = 0
+stopDuration = None
+stopSignal = 0
+speedAmplitudeLog = []
+angSpeedAmplitudeLog = []
+stop = Pin('GP16', Pin.IN)
+
+def update_motors(tim):
+    x, y = test_joystick.get_values()
+    L = 0.9*min(max(x+y,-1),1)
+    R = 0.9* min(max(x-y,-1),1)
+    L_motor.set_speed(L)
+    R_motor.set_speed(R)
+    if stop.value():
+        L_motor.disable()
+        R_motor.disable()
+        tim.deinit()
+
+
+test_joystick = Joystick('GP28', 'GP27')
+
+L_motor = Motor('GP0', 'GP1', 'GP14')
+R_motor = Motor('GP2', 'GP3', 'GP15')
+
+L_motor.enable()
+R_motor.enable()
+
+tim = Timer()
+
+tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
+
+
 # ---- STAGE 1. IMPORT SCRIPTS and initialise classes------
 # initalise l2s2
 
@@ -23,12 +76,16 @@ PROCESS 1 PSEUDOCODE
 # sudden joystick pullback stop
 
 # ---- STAGE 4 - FILTERING AND TREMOR TRACKING ----
-
+# update joystick pos from filter
+# record tremor data 
 
 # ---- STAGE 5 - CALCULATE MOTOR DESIRED SIGNALS FROM CONTROL THEORY ------
+# find speeds from pos
+# find motor signals from speeds
 
 
 # ----- STAGE 6 - SEND SIGNALS TO MOTOR -----
+#updateMotorSignals()
 
 # ----- STAGE 7 - USAGE TRACKING ------
 # estimate speed
