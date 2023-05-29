@@ -2,6 +2,33 @@
 
 PROCESS 1 PSEUDOCODE
 '''
+from motor_controller import Motor
+from joystick import Joystick
+from machine import Timer, Pin
+from collections import deque
+import math
+import time
+
+speedAmpltitude = 1
+angSpeedAmpltitude = 1
+xPosBuffer = [0] * 500
+xPosBuffer = deque(xPosBuffer,maxlen=500)
+yPosBuffer = [0] * 500
+yPosBuffer = deque(yPosBuffer,maxlen=500)
+testx = []
+testy = []
+stops = []
+filtered_signal = [] 
+startTime = round(utime.time())
+xFilter = ButterworthFilter(9, 3, 0.01)
+yFilter = ButterworthFilter(9, 3, 0.01)
+samplingFrequency = 100 
+resetTime = 0
+stopDuration = None
+stopSignal = 0
+speedAmplitudeLog = []
+angSpeedAmplitudeLog = []
+stop = Pin('GP16', Pin.IN)
 
 # tim code
 from motor_controller import Motor
@@ -69,6 +96,7 @@ tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 # read input from gps
 # read pressure plate input
 # read distance sensor
+# estimate speed
 # 
 
 # ----- STAGE 3 - WARNING SYSTEMS ------
@@ -86,7 +114,7 @@ tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 # ----- STAGE 6 - SEND SIGNALS TO MOTOR -----
 
 # ----- STAGE 7 - USAGE TRACKING ------
-# estimate speed
+
 # estimate distance travelled
 # count sitting duration
 # GPS
