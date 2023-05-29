@@ -3,28 +3,18 @@ import utime
 import time
 import ustruct
 import sys
-from pimoroni_bus import SPIBus
 
 class L2S2Module:
-    def __init__(self, timeout, spi_bus, wifi_name, wifi_password):
-        self.set_wifi(wifi_name, wifi_password)
-        self.timeout = timeout
-        self.spi_bus = spi_bus
-        if self.spi_bus == 0:
-            self.spi1 = machine.SPI(0,
-                        baudrate=100000,
-                        polarity=0,
-                        phase=1,
-                        bits=8,
-                        firstbit=machine.SPI.MSB,
-                        sck=machine.Pin(18),
-                        mosi=machine.Pin(19),
-                        miso=machine.Pin(16))
-            self.spi1cs = machine.Pin(6, machine.Pin.OUT)
-            print("L2S2 SPI")
-            print(machine.SPI(0))
-        if self.spi_bus == 1:
-            self.spi1 = machine.SPI(1,
+    def __init__(self):
+        self.spi1 = None
+        self.spi1cs = None
+        self.L2S2_TIMEOUT = 10
+        self.table = [ 
+            # Your table values
+        ]
+
+    def setL2S2SPI(self):
+        self.spi1 = machine.SPI(1,
                         baudrate=100000,
                         polarity=0,
                         phase=1,
@@ -33,13 +23,12 @@ class L2S2Module:
                         sck=machine.Pin(10),
                         mosi=machine.Pin(11),
                         miso=machine.Pin(12))
-
-            self.spi1cs = machine.Pin(13, machine.Pin.OUT)
-            print("L2S2 SPI")
-            print(machine.SPI(1))
-
+    
+    def boot_L2S2(self):
+        self.spi1cs = machine.Pin(13, machine.Pin.OUT)
         self.spi1cs.value(1)
-        print(self.myTimeNow(), "Startup Successful!")
+        self.setL2S2SPI()
+        print(self.myTimeNow(), "Startup")
 
     def myTimeNow(self):
         yr, mt, d, hr, m, s, day, yrday = utime.localtime()
@@ -85,10 +74,10 @@ class L2S2Module:
 
         hdr = bytearray(header.to_bytes(1,'little'))
         length = bytearray(len(payload).to_bytes(2,'little'))
-        crc = CCITT_crc16_false(hdr + length + payload, 0, int(len(hdr + length + payload)))
+        crc = self.CCITT_crc16_false(hdr + length + payload, 0, int(len(hdr + length + payload)))
         crcarray = bytearray(crc.to_bytes(2,'little'))
         packetToSend = hdr + length + crcarray + payload
-        print(myTimeNow(),"Sending ", " ".join('{:02x}'.format(x) for x in packetToSend))
+        print(self.myTimeNow(),"Sending ", " ".join('{:02x}'.format(x) for x in packetToSend))
 
         self.spi1cs.value(0)
         self.spi1.write(packetToSend)
@@ -97,7 +86,7 @@ class L2S2Module:
         self.spi1cs.value(0)
         replyHeader = b'\x00'
         startTime = time.ticks_ms()
-        while (replyHeader == b'\x00' and time.ticks_diff(time.ticks_ms(), startTime)<(self.timeout*1000)):
+        while (replyHeader == b'\x00' and time.ticks_diff(time.ticks_ms(), startTime)<(self.L2S2_TIMEOUT*1000)):
             self.spi1cs.value(0) 
             replyHeader = self.spi1.read(1)
             time.sleep_ms(100)
@@ -123,7 +112,7 @@ class L2S2Module:
             print(self.myTimeNow(),"Received: Header ", " ".join('{:02x}'.format(x) for x in replyHeader), "Payload ", " ".join('{:02x}'.format(x) for x in replyPayload))
             return replyHeader, replyPayload
         else:
-            print(myTimeNow(),"L2S2 Timeout or CRC error")
+            print(self.myTimeNow(),"L2S2 Timeout or CRC error")
             time.sleep(1)
             return b'\x00', b'\x00'
 
@@ -132,8 +121,8 @@ class L2S2Module:
         return record_id + "|" + plate_template_id + "|" + control_id + "\0"
 
     @staticmethod
-    def get_payload_int(field_id, type, content, units = None):
-        __field__ = bytearray(field_id.encode("utf-8"))
+    def get_payload_int(field_id, _type, content, units = None):
+        _field_b = bytearray(field_id.encode("utf-8"))
 
         #Creation of the datatype of content as byte:
         _type_b = bytearray(1)
@@ -143,26 +132,48 @@ class L2S2Module:
         #Need to make if options for different datatypes
         if (_type == 1):
             _content_b = bytearray([0x00])
-            _content_b[0] = _content
+            _content_b[0] = content
         elif (_type == 2):
-            _content_b = _content.to_bytes(4,'little')
+            _content_b = content.to_bytes(4,'little')
         elif (_type == 3):
-            _content_b = _content.to_bytes(8,'little')
+            _content_b = content.to_bytes(8,'little')
         elif (_type == 4):
-            _content_b = _content.to_bytes(8,'little') #seconds since 1st Jan 1970, held as a long (64-bit C type time_t)
+            _content_b = content.to_bytes(8,'little') #seconds since 1st Jan 1970, held as a long (64-bit C type time_t)
         elif (_type == 5):
-            _content_b = bytearray((_content + '\0').encode("utf-8"))
+            _content_b = bytearray((content + '\0').encode("utf-8"))
 
-        __units__ = bytearray(units.encode("utf-8"))
+        _units_b = bytearray(units.encode("utf-8"))
 
-        payload =  __field__ + _type_b + __content_b + __units__
+        payload =  _field_b + _type_b + _content_b + _units_b
         return payload
 
     def send_data(self, record_id, plate_template_id, control_id, _type, content, units = None):
         field_id = self.get_field_id(record_id, plate_template_id, control_id)
         payload_test = self.get_payload_int(field_id, _type, content, units)
-        return self.spiToL2S2(header=150, payload=payload_test)
+        print(f"PAYLOAD: {payload_test}")
+        #Payload_diode init
+        payload_diode = bytearray([0x00, 0x00, 0xFF, 0x00]) #red = (0, 0, 255)
+
+        #Diode on
+        self.spiToL2S2(99, payload_diode)
+
+
+        # Send data off
+        header, replyPayload = self.spiToL2S2(header=150, payload=payload_test)  # assuming 98 is the correct header for this operation
+
+        if header == b'\x00':
+            print("Data sent successfully!")
+        else:
+            print("Data sending failed!")
+
+        #Payload_diode off
+        payload_diode = bytearray([0x00, 0x00, 0x00, 0x00]) #off = (0, 0, 0)
+
+        #Diode off
+        self.spiToL2S2(99, payload_diode)
+        return 
 
 # Usage:
 #l2s2_module = L2S2Module("AndroidAP", "ahmed123")
 #l2s2_module.send_data("110", "6e0485b5-cd17-4438-aff8-afe0578ed71f", "4", _type = 5, content = "69", units = "degrees")
+
