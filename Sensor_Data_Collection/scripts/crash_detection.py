@@ -1,15 +1,13 @@
 import math
 import time
 
-def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
+def crash_detection(accel, distance_sensor, DEBUG=False, time_step=1):
     """
     Crash detection routine using accelerometer, GPS, and distance sensor data.
 
     Args:
         accel: Accelerometer object.
-        gps: GPS object.
         distance_sensor: Distance sensor object.
-        previous_gps_data: Previous GPS data for comparison.
         previous_accel_data: Previous accelerometer data for comparison.
         DEBUG: Debug mode flag. If True, debugging output will be printed.
         time_step: Time step for each iteration in seconds.
@@ -18,7 +16,7 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
     previous_accel_data = None
     jerk = None
 
-    global current_true_crashes
+    global current_true_crashes  
     current_true_crashes = 0
 
     while True:
@@ -36,25 +34,17 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
                 previous_acc_mag = math.sqrt(previous_accel_data["AcX"]**2 + previous_accel_data["AcY"]**2 + previous_accel_data["AcZ"]**2)
                 jerk = (acc_mag - previous_acc_mag) / time_step
             
-            # Get GPS data
-            gps_data = gps.get_data()
 
             # Get distance data
             distance = distance_sensor.get_smooth_distance()
-
-            # If we have previous data to compare to
-            if previous_gps_data is not None and jerk is not None:
-                # Get distance between current and previous GPS points
-                gps_distance = gps.get_relative_position(previous_gps_data, gps_data)
                 
-                # Check if we have a potential crash
-                if jerk > 5 and acc_mag > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
-                    current_true_crashes += 1
-                    if DEBUG:
-                        print("Crash Detected")
+            # Check if we have a potential crash
+            if jerk > 5 and acc_mag > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
+                current_true_crashes += 1
+                if DEBUG:
+                    print("Crash Detected")
 
             # Store previous data
-            previous_gps_data = gps_data
             previous_accel_data = accel_data
 
             # Debugging output
