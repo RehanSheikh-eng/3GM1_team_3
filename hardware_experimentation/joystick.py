@@ -9,8 +9,8 @@ class Joystick:
     
     def get_values(self):
         return (
-            2 *(self.X.read_u16() - self.X_0) / (2**16 - 1),
-            2 * (self.Y.read_u16() - self.X_0) / (2**16 - 1)
+            2 * (self.X.read_u16() - self.X_0) / (2**16 - 1),
+            2  * (self.Y.read_u16() - self.X_0) / (2**16 - 1)
         )
     
     def rezero(self):
