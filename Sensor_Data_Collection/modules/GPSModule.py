@@ -9,26 +9,59 @@ class GPSModule:
         self.uart.init(baud_rate, bits=8, parity=None, stop=1)
 
     def get_data(self):
-        if self.uart.any():
-            line = self.uart.readline()
-            if line:
-                data = self.parse_gngga_string(line)
-                return data
+        data = b''
+        while self.uart.any():
+            data += self.uart.readline()
+        if data:
+            try:
+                sentences = data.decode().split('\r\n')  # split data into separate sentences
+                for sentence in sentences:
+                    if sentence:
+                        #print(sentence)
+                        parsed_data = self.parse_gpgga_string(sentence)
+                        if parsed_data is not None:
+                            return parsed_data
+                        
+            except UnicodeError:
+                print("Error: Unicode Error")
+                
         return None
 
-    def parse_gngga_string(self, gngga_string):
-        components = gngga_string.decode().split(",")
-        if "GNGGA" in components[0]:
-            timestamp = components[1]
-            latitude = self.convert_to_degrees(float(components[2]))
-            longitude = self.convert_to_degrees(float(components[4]))
+
+    def parse_gpgga_string(self, gpgga_string):
+        try:
+            components = gpgga_string.split(",")
+            #print(components)
+        except UnicodeError:
+            print("Error: Unable to decode string.")
+            return None
+        except AttributeError:
+            print("Error: The input is not a string.")
+            return None
+
+        if "GPRMC" in components[0]:
+            try:
+                timestamp = components[1]
+                latitude = components[2] if "GPGGA" in components[0] else components[3]
+                longitude = components[4] if "GPGGA" in components[0] else components[5]
+
+                if latitude and longitude:  # Ensure the fields are not empty
+                    latitude = self.convert_to_degrees(float(latitude))
+                    longitude = self.convert_to_degrees(float(longitude))
+                else:
+                    print("Error: Latitude or Longitude data missing.")
+                    return None
+            except (IndexError, ValueError):
+                print("Error: Invalid NMEA sentence.")
+                return None
+
             return {
                 "timestamp": timestamp,
                 "latitude": latitude,
                 "longitude": longitude
             }
-        else:
-            return None
+
+        return None
 
     def convert_to_degrees(self, raw_value):
         decimal_value = raw_value/100.00
@@ -40,11 +73,13 @@ class GPSModule:
 
     def get_relative_position(self, data1, data2):
         R = 6371e3  # Earth's radius in meters
-        lat1 = radians(float(data1["latitude"]))
-        lon1 = radians(float(data1["longitude"]))
-        lat2 = radians(float(data2["latitude"]))
-        lon2 = radians(float(data2["longitude"]))
-
+        try:
+            lat1 = radians(float(data1["latitude"]))
+            lon1 = radians(float(data1["longitude"]))
+            lat2 = radians(float(data2["latitude"]))
+            lon2 = radians(float(data2["longitude"]))
+        except TypeError:
+            return 0
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
@@ -52,3 +87,5 @@ class GPSModule:
         c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
         return R * c  # Output distance in meters
+
+
