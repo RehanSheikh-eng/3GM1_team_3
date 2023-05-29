@@ -6,17 +6,17 @@ import matplotlib.pyplot as plt
 
 
 # Sampling parameters
-sampling_freq = 1000  # Sampling frequency in Hz
-num_samples = 10000    # Number of samples to acquire
+sampling_freq = 100  # Sampling frequency in Hz
+num_samples = 1000    # Number of samples to acquire
 # generated sine wave parameters
-frequency = 15  # Frequency of the sine wave in Hz
-amplitude = 1.0  # Amplitude of the sine wave
-duration = 10.0  # Duration of the signal in seconds
-sampling_rate = 1000  # Number of samples per second
+#frequency = 15  # Frequency of the sine wave in Hz
+#amplitude = 1.0  # Amplitude of the sine wave
+#duration = 10.0  # Duration of the signal in seconds
+#sampling_rate = 100  # Number of samples per second
 # analysis variables
 window_size = 50  # for calculating intensities- it's the sample number
 tremor_window = (3, 17)  # bounds of data we are using for analysis in Hz
-intensity_threshold = 2
+intensity_threshold = 0.80
 
 
 # functions
@@ -38,11 +38,12 @@ def tremor_window_fft(fft_result, fft_freq, tremor_window1):  # t window is lowe
 
 
 def analyze_frequency(signal):
+    plt.plot(signal)
+
     # Perform FFT on the signal
     fft_result = np.fft.fft(signal)
-    fft_freq = np.fft.fftfreq(len(signal), 1 / sampling_freq)
-    plt.plot(fft_freq, fft_result)
-    plt.show()
+    fft_freq = np.fft.fftfreq(len(signal), (1 / sampling_freq))
+    plt.plot(fft_freq, np.abs(fft_result))
     fft_result, fft_freq = tremor_window_fft(fft_result, fft_freq, tremor_window)
 
     # Find the index of the maximum magnitude in the FFT result
@@ -100,7 +101,7 @@ def calculate_values_and_append(tremor_intensities1, signal_buffer1):
 # Main loop for signal acquisition and analysis
 
 # generating sample data
-data1 = generate_sine_wave(frequency, 0, duration, sampling_rate)
+'''data1 = generate_sine_wave(frequency, 0, duration, sampling_rate)
 data2 = generate_sine_wave(frequency, amplitude*7, duration/2, sampling_rate)
 input_data = array.array("h", [0] * num_samples)
 if len(data2) < num_samples:
@@ -108,7 +109,25 @@ if len(data2) < num_samples:
     for i in range(len(data2)):
         data2zeros[i] = data2[i]
     input_data = data1+data2zeros
-t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
+t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False) '''
+
+sampling_rate = 100 # Replace with your desired sampling rate
+duration = 2.0  # Total duration of the signal in seconds
+frequency = 10.0  # Frequency of the sine wave in Hz
+pause_duration = 1.0  # Duration of the pause between sine waves in seconds
+
+# Time values
+t_sine = np.arange(0, duration, 1 / sampling_rate)
+t_pause = np.arange(0, pause_duration, 1 / sampling_rate)
+
+# Create the input data
+sine_wave = np.sin(2 * np.pi * frequency * t_sine)
+pause = 0.01*np.sin(2 * np.pi * frequency* t_pause)
+
+
+# Concatenate the sine waves with the pause
+input_data = np.concatenate([sine_wave, pause, sine_wave])
+t = np.arange(0, len(input_data)) / sampling_rate
 
 # arrays for analysis
 signal_buffer = []
@@ -117,6 +136,7 @@ length_array = []
 average_intensity_array = []
 tremor_data = []
 tremor_intensities = []
+intensity_of_signal = []
 # initial conditions
 tremor_present = False  # initial cond for the loops to work
 i=0
@@ -132,18 +152,28 @@ while i <= (len(input_data)-1):
         if tremor_present:
             if intensity <= intensity_threshold:
                 tremor_present = False
-                calculate_values_and_append(tremor_intensities, signal_buffer)
+                calculate_values_and_append(tremor_intensities, tremor_data)
+                tremor_data = []
 
         signal_buffer = []
 
     i = i+1
 if tremor_present:
     tremor_present = False
-    calculate_values_and_append()
+    calculate_values_and_append(tremor_intensities, tremor_data)
+    tremor_data = []
 
+plt.figure(figsize=(10, 6))
+plt.subplot(2, 1, 1)
+plt.plot(t, input_data)
+plt.title('Input Signal (Sine Wave)')
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
 
 # Print the analysis outputs
 print("Dominant Frequency:", dominant_frequency_array)
 print("length:", length_array)
 print("average intensity:", average_intensity_array)
 
+plt.tight_layout()
+plt.show()
