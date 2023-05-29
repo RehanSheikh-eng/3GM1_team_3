@@ -198,6 +198,8 @@ samplingFrequency = 100
 resetTime = 0
 stopDuration = None
 stopSignal = 0
+speedAmplitudeLog = []
+angSpeedAmplitudeLog = []
 # ------ THIS WILL BE THE MAIN LOOP ----
 listXPOS, listYPOS = readjoystickTextFile(fileName = 'sudden_Stop_100hz_try2.txt')
 
@@ -251,6 +253,7 @@ for i in range(0,len(listYPOS)):
         plt.show()
     if stopSignal != -1: # under normal operating conditions check if a stop is necessary
         stopSignal,stopDuration = stopIfPullBackDetected(yPosBuffer,100,i)
+
         if stopSignal == -1:
             resetTime = round(utime.time()) - startTime + stopDuration
     stops.append(stopSignal)
@@ -268,8 +271,8 @@ for i in range(0,len(listYPOS)):
     # calc demand speed and angular velocity
     demandSpeed = positionToSpeed(joystickSpeedInput,posSpeedAmplitude=speedAmpltitude,negSpeedAmplitude=speedAmpltitude)
     demandAngularVelocity = positionToAngularVelocity(joystickAngularVelocityInput,posAngVelAmplitude=angSpeedAmpltitude,negAngVelAmplitude=angSpeedAmpltitude)
-
-
+    angSpeedAmplitudeLog.append(demandAngularVelocity)# monitor these
+    speedAmplitudeLog.append(demandSpeed)# monitor these
 
     # ------ CALCULATE OUTPUT SIGNALS
     # calc motor signals 
@@ -284,8 +287,9 @@ for i in range(0,len(listYPOS)):
 
 
 print("actual frequency:",800/(utime.time() - startTime)) # actual is around 83 hz for 8 seconds of 100 hz samples
-plt.plot(filtered_signal)
-plt.plot(testy)
+plt.plot(filtered_signal,label = 'filt signal y')
+plt.plot(testy,label = 'raw y')
+plt.plot(speedAmplitudeLog,label = 'est speed')
 print(np.shape(stops))
 print(np.shape(testx))
 plt.plot(stops)
