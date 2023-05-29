@@ -4,7 +4,11 @@ from machine import Timer, Pin
 
 import time
 
+<<<<<<< HEAD
 run = Pin('GP16', Pin.IN, Pin.PULL_UP)
+=======
+stop = Pin('GP16', Pin.IN)
+>>>>>>> refs/remotes/origin/main
 
 def update_motors(tim):
     gain = 0.5
@@ -13,7 +17,11 @@ def update_motors(tim):
     R = gain*0.9* min(max(x-y,-1),1)**3
     L_motor.set_speed(L)
     R_motor.set_speed(R)
+<<<<<<< HEAD
     if not run.value():
+=======
+    if stop.value():
+>>>>>>> refs/remotes/origin/main
         L_motor.disable()
         R_motor.disable()
         tim.deinit()
@@ -29,4 +37,4 @@ R_motor.enable()
 
 tim = Timer()
 
-tim.init(mode=Timer.PERIODIC, freq=1000, callback=update_motors)
+tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)

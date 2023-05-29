@@ -49,8 +49,6 @@ def crash_detection(accel, gps, distance_sensor, DEBUG=False, time_step=1):
                 
                 # Check if we have a potential crash
                 if jerk > 5 and acc_mag > 6 and gps_distance < 0.5 and distance < 100 and gyro_mag > 0.5:
-                    # TRIGGER CRASH DETECTION PROTOCOL:
-                    # 1. TRIGGER BUZZER
                     current_true_crashes += 1
                     if DEBUG:
                         print("Crash Detected")
