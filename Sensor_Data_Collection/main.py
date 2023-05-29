@@ -64,6 +64,8 @@ accelerometer_timer = Timer(-1)
 gps_timer = Timer(-1)
 #distance_sensor_timer = Timer(-1)
 L2S2_timer = Timer(-1)
+
+
 # Initialise Script timers
 crash_detection_timer = Timer(-1)
 
