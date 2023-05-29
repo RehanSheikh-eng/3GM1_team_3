@@ -9,8 +9,17 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from collections import deque
+import time as utime
+import sys
+import defandclasses
+
+global leftMotor, rightMotor
 
 # next define the necessary functions
+
+
+
+#creating the filters
 
 
 def positionToSpeed(x,posSpeedAmplitude = 2,posSpeedOffset = -0.2,posSpeedFreq = 0.2,\
@@ -107,7 +116,7 @@ def stopIfPullBackDetected(ypos,freq,i):
     When given in a list of previous y positions at least for 2 seconds then detect if sudden pull back 
 
     :param @ypos: list of previous speed positions on joystick
-    :out binary signal (-1,0) 
+    :out binary signal (-1,0) and stopping 
     if sharp pull back detected then a -1 is sent
     or button pressed
     """
@@ -123,13 +132,13 @@ def stopIfPullBackDetected(ypos,freq,i):
     rate = (ypos[-1] - ypos[-(freq+1)])/(deltaT * freq )
     #print("rate={}".format(rate))
     rateHigh = (rate < cutoff)
-    lastSecond = ypos[-(freq+50):-1]
+    lastSecond = ypos[-(int(freq/2)):-1]
     highestValue = max(lastSecond)
     #print("highest value = {}".format(highestValue))
     lastSecondPositive = highestValue > 0.3
     print(currPosTest,rateHigh,lastSecondPositive)
     if currPosTest and rateHigh and lastSecondPositive:
-        return -1
+        return -1,5
     else:
         return 0
 
@@ -158,6 +167,17 @@ def readjoystickTextFile(fileName):
             iteration.append(j)
     return xPos_vector, yPos_vector
 
+def calcJoystickSpeedFromHealthScore(healthScore):
+    maxHealthScore = 100 # CHANGE
+    minHealthScore = 0
+    averageHealthScore = 50
+    if healthScore > averageHealthScore:
+        return 1
+    elif healthScore < minHealthScore:
+        return healthScore / averageHealthScore
+    else:
+        return 1
+
 # other functions
 # INITIALISE KEY VARS
 speedAmpltitude = 1
@@ -169,6 +189,8 @@ yPosBuffer = deque(yPosBuffer,maxlen=500)
 testx = []
 testy = []
 stops = []
+filtered_signal = []
+startTime = utime.time()
 # ------ THIS WILL BE THE MAIN LOOP ----
 listXPOS, listYPOS = readjoystickTextFile(fileName = 'sudden_Stop_100hz_try2.txt')
 
@@ -188,8 +210,15 @@ for i in range(0,len(listYPOS)):
 
     # extract joystick acceleration
 
+    # extract health score
+    healthScore = 50
+
+    # calc current time
+    currTime = utime.time() - startTime
+
     # ------- FILTER PHASE -------
     # function to filter input
+
     # ana to fill 
 
     # ------- SYSTEM SAFETY MANEOUVERS -------
@@ -199,15 +228,17 @@ for i in range(0,len(listYPOS)):
         yfake = np.linspace(0.8,-0.8,200)
         plt.plot(idx,yfake)
         plt.show()
-    stop = stopIfPullBackDetected(yPosBuffer,100,i)
-    stops.append(stop)
-    if stop == -1:
-        print(stop)
+    stopSignal = stopIfPullBackDetected(yPosBuffer,100,i)
+    stops.append(stopSignal)
+    if stopSignal == -1:
+        print(stopSignal)
         speedAmpltitude = 0
         angSpeedAmpltitude = 0
-        
+    else:
+        speedAmpltitude *= calcJoystickSpeedFromHealthScore(healthScore=healthScore) * speedAmpltitude    
+        angSpeedAmpltitude *= calcJoystickSpeedFromHealthScore(healthScore=healthScore) * angSpeedAmpltitude    
 
-
+    
     # ------ CALCULATE DEMANDED SPEEDS ------
 
     # calc demand speed and angular velocity
@@ -220,6 +251,10 @@ for i in range(0,len(listYPOS)):
     # calc motor signals 
 
     leftMotorSignal, rightMotorSignal = findMotorSignalsFromSetSpeeds(demandSpeed,demandAngularVelocity)
+
+    # set motor signal
+
+
 
     # update key variables 
 
