@@ -56,8 +56,9 @@ tim = Timer()
 tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 
 
-# ---- STAGE 1. IMPORT SCRIPTS and initialise classes------
+# ---- STAGE 1. IMPORT SCRIPTS, INITIALISE CLASSES, INITIALISE VARIABLES------
 # initalise l2s2
+
 
 # ----- STAGE 2 - READ VARIABLES IN -----
 

@@ -11,6 +11,7 @@ All functions that are used in main.py are stored here
 def startCrashPrevention():
     pass
 
+
 def startCrashDetection():
     pass
 
