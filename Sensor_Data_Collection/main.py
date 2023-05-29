@@ -102,12 +102,50 @@ PROCESS 1 PSEUDOCODE
 # ----- STAGE 2 - READ VARIABLES IN -----
 
 # read input from joystick to buffer
-# read input from accelerometer
+# read input from accelerometer to accel buffer 
 # read input from motors
 # read input from gps
 # read pressure plate input
 # read distance sensor
 # 
+
+# ----- STAGE 3 - WARNING SYSTEMS ------
+# 
+# crash prevention function
+# crash detection
+# sudden joystick pullback stop
+
+# ---- STAGE 4 - FILTERING AND TREMOR TRACKING ----
+
+
+# ---- STAGE 5 - CALCULATE MOTOR DESIRED SIGNALS FROM CONTROL THEORY ------
+
+
+# ----- STAGE 6 - SEND SIGNALS TO MOTOR -----
+
+# ----- STAGE 7 - USAGE TRACKING ------
+# estimate speed
+# estimate distance travelled
+# count sitting duration
+# GPS
+
+
+# ----- STAGE 8 - L2S2 ------
+
+
+# ----
+
+
+
+
+
+
+
+
+
+
+
+
 # variables for use in speed Estimator
 A = 1
 w = 0.1
