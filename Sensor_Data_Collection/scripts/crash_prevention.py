@@ -22,6 +22,7 @@ def start_crash_prevention(distance_sensor, motor, speaker, joystick, MA_order=3
     # Load SpeedAmplitude (i.e. joystick gain as a global variable)
     global speedAmplitude
     global angSpeedAmplitude
+    global stopSignal
     
     while True:
         distance = distance_sensor.get_smooth_distance(MA_order)
@@ -40,8 +41,7 @@ def start_crash_prevention(distance_sensor, motor, speaker, joystick, MA_order=3
             speedAmplitude = distance/500 # scale joystick gain according to distance from object
             angSpeedAmplitude = distance/500
         elif distance < 500 and stick_change < 0.1 and joystick_y_positions[2] > 0.975:
-            motor.set_speed(0)
-            time.sleep(5)
+            stopSignal = -1 # turns on the brakes
             current_total_crashes += 1
             t = time_step
         else:
