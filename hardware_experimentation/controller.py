@@ -11,7 +11,11 @@ import matplotlib.pyplot as plt
 from collections import deque
 import time as utime
 import sys
-import defandclasses
+from defandclasses import ButterworthFilter
+try:
+    import motor_controller
+except ModuleNotFoundError:
+    print("Machine module not found: expected when not running on micropython")
 
 global leftMotor, rightMotor
 
@@ -126,8 +130,6 @@ def stopIfPullBackDetected(ypos,freq,i):
     # also rate of change must be big 
     # in last second must value must be greater than 0.5
     ypos = list(ypos)
-    if i>150:
-        print("test")
     currPosTest  = (np.average(ypos[-10:-1]) < -0.5 )
     rate = (ypos[-1] - ypos[-(freq+1)])/(deltaT * freq )
     #print("rate={}".format(rate))
@@ -136,11 +138,11 @@ def stopIfPullBackDetected(ypos,freq,i):
     highestValue = max(lastSecond)
     #print("highest value = {}".format(highestValue))
     lastSecondPositive = highestValue > 0.3
-    print(currPosTest,rateHigh,lastSecondPositive)
+    #print(currPosTest,rateHigh,lastSecondPositive)
     if currPosTest and rateHigh and lastSecondPositive:
-        return -1,5
+        return -1,2
     else:
-        return 0
+        return 0,0
 
 def readJoystickValues(simulator = True,listXPOS = None,listYPOS = None,i = None):
     # write functionality to return xpos,ypos
@@ -189,8 +191,13 @@ yPosBuffer = deque(yPosBuffer,maxlen=500)
 testx = []
 testy = []
 stops = []
-filtered_signal = []
-startTime = utime.time()
+filtered_signal = [] 
+startTime = round(utime.time())
+Bfilter = ButterworthFilter(9, 3, 0.01)
+samplingFrequency = 100 
+resetTime = 0
+stopDuration = None
+stopSignal = 0
 # ------ THIS WILL BE THE MAIN LOOP ----
 listXPOS, listYPOS = readjoystickTextFile(fileName = 'sudden_Stop_100hz_try2.txt')
 
@@ -200,8 +207,13 @@ for i in range(0,len(listYPOS)):
     # ------- EXTRACTION PHASE ------
     # extract joystick input
     # when simulator is turned on a text file can be inputted
+    utime.sleep(1/samplingFrequency)
+    # --- SIMULATOR VERSION ----- CHANGE THIS LINE FOR REAL OPERATION
     joystickAngularVelocityInput,joystickSpeedInput = readJoystickValues(simulator=True,listXPOS= listXPOS,
     listYPOS= listYPOS,i = i)
+    # --- NO CHANGES REQUIRED BELOW
+
+
     xPosBuffer.append(joystickAngularVelocityInput)
     testx.append(joystickAngularVelocityInput)
     yPosBuffer.append(joystickSpeedInput)
@@ -214,23 +226,35 @@ for i in range(0,len(listYPOS)):
     healthScore = 50
 
     # calc current time
-    currTime = utime.time() - startTime
-
+    currTime = round(utime.time()) - startTime
+    if i % 100 == 0:
+        print(currTime)
     # ------- FILTER PHASE -------
     # function to filter input
-
+    filtered_value = Bfilter.update(joystickSpeedInput)
+    filtered_signal.append(filtered_value)
     # ana to fill 
 
     # ------- SYSTEM SAFETY MANEOUVERS -------
     # code to test stop func
+    if i % 100 == 0:
+        print("stop signal: {}, currTime: {}, resetTime:{}".format(stopSignal,currTime,resetTime))
+    if stopSignal == -1 and currTime > resetTime: # reset the stop signal if enough time passes
+        stopSignal = 0
+        speedAmpltitude = 1
+        angSpeedAmpltitude = 1
+
     if False:
         idx = np.linspace(1,200,200)
         yfake = np.linspace(0.8,-0.8,200)
         plt.plot(idx,yfake)
         plt.show()
-    stopSignal = stopIfPullBackDetected(yPosBuffer,100,i)
+    if stopSignal != -1: # under normal operating conditions check if a stop is necessary
+        stopSignal,stopDuration = stopIfPullBackDetected(yPosBuffer,100,i)
+        if stopSignal == -1:
+            resetTime = round(utime.time()) - startTime + stopDuration
     stops.append(stopSignal)
-    if stopSignal == -1:
+    if stopSignal == -1: # stop if signal detected
         print(stopSignal)
         speedAmpltitude = 0
         angSpeedAmpltitude = 0
@@ -252,16 +276,18 @@ for i in range(0,len(listYPOS)):
 
     leftMotorSignal, rightMotorSignal = findMotorSignalsFromSetSpeeds(demandSpeed,demandAngularVelocity)
 
-    # set motor signal
 
+    # PASS MOTOR SIGNAL TO MOTORS
 
 
     # update key variables 
 
 
-
-plt.plot(testx)
+print("actual frequency:",800/(utime.time() - startTime)) # actual is around 83 hz for 8 seconds of 100 hz samples
+plt.plot(filtered_signal)
 plt.plot(testy)
+print(np.shape(stops))
+print(np.shape(testx))
 plt.plot(stops)
 plt.show()
 print("program executed")
