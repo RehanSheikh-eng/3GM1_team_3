@@ -4,15 +4,16 @@ from machine import Timer, Pin
 
 import time
 
-Run = Pin('GP16', Pin.IN)
+run = Pin('GP16', Pin.IN, Pin.PULL_UP)
 
 def update_motors(tim):
+    gain = 0.5
     x, y = test_joystick.get_values()
-    L = 0.9*min(max(x+y,-1),1)
-    R = 0.9* min(max(x-y,-1),1)
+    L = gain*0.9*min(max(x+y,-1),1)**3
+    R = gain*0.9* min(max(x-y,-1),1)**3
     L_motor.set_speed(L)
     R_motor.set_speed(R)
-    if Run.value():
+    if not run.value():
         L_motor.disable()
         R_motor.disable()
         tim.deinit()
@@ -29,4 +30,3 @@ R_motor.enable()
 tim = Timer()
 
 tim.init(mode=Timer.PERIODIC, freq=1000, callback=update_motors)
-d
