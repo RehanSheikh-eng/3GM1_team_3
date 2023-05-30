@@ -77,8 +77,8 @@ def update_motors(tim):
     x, y = test_joystick.get_values()
     x_filter = xfilter.update(x)
     y_filter = yfilter.update(y)
-    L = safety*1*min(max(x+y,-1),1)
-    R = safety*1*min(max(x-y,-1),1)
+    L = safety*1*min(max(x_filter+y_filter,-1),1)
+    R = safety*1*min(max(x_filter-y_filter,-1),1)
     L_motor.set_speed(L)
     R_motor.set_speed(R)
     if not run.value():
