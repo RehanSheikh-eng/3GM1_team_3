@@ -18,6 +18,9 @@ from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
 from Sensor_Data_Collection.modules.SittingSwitchModule import SittingSwitch
 
 # Set pins
+JOYSTICK_V_X_PIN = 28
+JOYSTICK_V_Y_PIN = 26
+
 ACCEL_SDA_PIN = 0
 ACCEL_SCL_PIN = 1
 ACCEL_I2C_ID = 0
@@ -38,7 +41,6 @@ SWITCH_PIN = None
 # Initialise variables
 current_total_crashes = 0 
 current_true_crashes = 0
-
 
 distance_buffer = [501,501,501]
 parking = False
@@ -61,12 +63,40 @@ distance_sensor = DistanceSensor(id = DIST_ID,
                                 scl = DIST_SCL_PIN
                                 )
 pressure_plate = SittingSwitch(SWITCH_PIN)
+accel = Accel(i2c_id=ACCEL_I2C_ID,
+            sda_pin=ACCEL_SDA_PIN,
+            scl_pin=ACCEL_SCL_PIN
+            )
+
+gps = GPSModule(uart_id=GPS_UART_ID,
+                baud_rate=GPS_UART_BAUD_RATE,
+                tx_pin_id=GPS_TX_PIN,
+                rx_pin_id=GPS_RX_PIN
+                )
+
+joystick = Joystick(X_pin=JOYSTICK_V_X_PIN,
+                    Y_pin=JOYSTICK_V_Y_PIN
+                    )
 speaker = Speaker(SPEAKER_PIN, initial_freq=750, duty_factor = 5000)
+
+l2s2 = L2S2Module()
+l2s2.boot_L2S2()
+
+# Initialise timers
+fast_timer = Timer(-1) # 100Hz
+slow_timer = Timer(-1) # 1Hz
+L2S2_timer = Timer(-1) # Once per minute
+
+# Initialise Data storage
+sensor_data = {"accel": None, "gps": None, "distance": None, "joystick": None}
+previous_data = {"accel": None, "gps": None}
 
 
 # --- STAGE 2 - READ VARIABLES ---
 
-# read input from joystick to buffer
+# Read input from joystick to buffer
+sensor_data["joystick"] = joystick.get_values()
+
 # read input from accelerometer to accel buffer
 # read input from motors
 # read input from gps
