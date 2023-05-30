@@ -1,3 +1,4 @@
+#change 1
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
@@ -67,18 +68,20 @@ class ButterworthFilter:
 # startTime = round(utime.time())
 xfilter = ButterworthFilter(12, 2, 0.01)
 yfilter = ButterworthFilter(12, 2, 0.01)
+
 run = Pin('GP26', Pin.IN)
 
 def update_motors(tim):
-    safety = 0.8
+    safety = 1
     x, y = test_joystick.get_values()
     x = xfilter.update(x)
     y = yfilter.update(y)
-    L = safety*0.9*min(max(x+y,-1),1)
-    R = safety*0.9*min(max(x-y,-1),1)
+    L = safety*1*min(max(x+y,-1),1)
+    R = safety*1*min(max(x-y,-1),1)
     L_motor.set_speed(L)
     R_motor.set_speed(R)
     if not run.value():
+        print("finish")
         L_motor.disable()
         R_motor.disable()
         tim.deinit()
