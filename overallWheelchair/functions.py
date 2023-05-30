@@ -164,8 +164,8 @@ def speedEstimator(prevSpeed,leftMotorSignal,rightMotorSignal
         speed = (speed_motor*var_accel + speed_accel*var_motor)  / (var_accel + var_motor) # Kalman filtered velocity
     return speed
 
-def positionToSpeed(x,posSpeedAmplitude = 2,posSpeedOffset = -0.2,posSpeedFreq = 0.2,\
-                     negSpeedAmplitude = 2, negSpeedOffset = 0.2,negSpeedFreq = 0.2 ):
+def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = -0.3,posSpeedFreq = 2.7,\
+                     negSpeedAmplitude = 1, negSpeedOffset = 0.3,negSpeedFreq = 2.7 ):
     """ this function maps the position on the joystick speed input to a desired speed using
         the non linear function v = A*tanh( wx+b )
 
@@ -195,8 +195,8 @@ def positionToSpeed(x,posSpeedAmplitude = 2,posSpeedOffset = -0.2,posSpeedFreq =
     else:
         return 0
 
-def positionToAngularVelocity(x,posAngVelAmplitude = 2,posAngVelOffset = -0.2,posAngVelFreq = 0.2,\
-                     negAngVelAmplitude = 2, negAngVelOffset = 0.2,negAngVelFreq = 0.2 ):
+def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.6,posAngVelFreq = 2.7,\
+                     negAngVelAmplitude = 1, negAngVelOffset = 0.6,negAngVelFreq = 2.7 ):
     """ this function maps the position on the angular velocity joystick input to a desired angular Velocity using
         the non linear function omega = A*tanh( wx+b )
 
@@ -226,7 +226,7 @@ def positionToAngularVelocity(x,posAngVelAmplitude = 2,posAngVelOffset = -0.2,po
     else:
         return 0
 
-def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.15,motorVoltageConstant = 1):
+def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.05,motorVoltageConstant = 1):
     """
     this function takes in the desired speed and and angular velocity signals and calculates the motor input signals
 
@@ -241,10 +241,10 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.15,motorVoltag
     :return motorRight_set: desired Right motor voltage
 
     """
-    signalGain = 1 # change this to keep the range as desired
+    signalGain = 0.15 # change this to keep the range as desired
     v, omega = v * signalGain, omega * signalGain
-    leftWheelSpeed = v - omega*l/2
-    rightWheelSpeed = v + omega*l/2
+    leftWheelSpeed = v + omega*l/2
+    rightWheelSpeed = v - omega*l/2
     leftWheelAngVel = leftWheelSpeed / wheelRadius
     rightWheelAngVel = rightWheelSpeed / wheelRadius
     leftMotorSignal = leftWheelAngVel * motorVoltageConstant
