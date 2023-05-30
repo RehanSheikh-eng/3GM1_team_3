@@ -1,7 +1,3 @@
-'''
-
-PROCESS 1 PSEUDOCODE
-'''
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
@@ -61,7 +57,6 @@ distance_travelled = 0
 # read input from gps
 # read pressure plate input
 # read distance sensor
-# estimate speed
 
 # Read distance sensor
 distance_buffer.pop(0)
@@ -73,6 +68,10 @@ distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
 # crash prevention function
 # crash detection
 # sudden joystick pullback stop
+
+functions.startCrashPrevention()
+functions.startCrashPrevention()
+
 
 # ---- STAGE 4 - FILTERING AND TREMOR TRACKING ----
 
@@ -119,10 +118,12 @@ tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 
 # ----- STAGE 7 - USAGE TRACKING ------
 
+# estimate speed
 # estimate distance travelled
 # count sitting duration
 # GPS
 
+speed = functions.speedEstimator(speed_buffer[0], leftMotorSignal, rightMotorSignal, leftMotorSignal_prev, rightMotorSignal_prev, sensor_data["accel"][1])
 distance_travelled += getDistance(speed_buffer, sensor_data, previous_data, gps)
 
 
