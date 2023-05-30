@@ -57,7 +57,7 @@ class ButterworthFilter:
         return output
 
 # warning functions
-def startCrashPrevention(distance, speed, speed_threshold = 1, beep_width = 100):
+def startCrashPrevention(distance, speed, speaker, speed_threshold = 1, beep_width = 100):
     global current_total_crashes
     global speedAmplitude
     global angSpeedAmplitude
