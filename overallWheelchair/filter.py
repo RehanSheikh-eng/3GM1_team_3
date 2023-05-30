@@ -1,13 +1,7 @@
-'''
-
-PROCESS 1 PSEUDOCODE
-'''
-
-# tim code
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
-
+from collections import deque
 import math
 import time
 
@@ -58,22 +52,30 @@ class ButterworthFilter:
 
         return output
 
-Bfilter = ButterworthFilter(9, 3, 0.01)
 
 
-
-
-xfilter = ButterworthFilter(9, 3, 0.01)
-yfilter = ButterworthFilter(9, 3, 0.01)
-
-run = Pin('GP16', Pin.IN)
+# speedAmpltitude = 1
+# angSpeedAmpltitude = 1
+# xPosBuffer = [0] * 500
+# xPosBuffer = deque(xPosBuffer,maxlen=500)
+# yPosBuffer = [0] * 500
+# yPosBuffer = deque(yPosBuffer,maxlen=500)
+# testx = []
+# testy = []
+# stops = []
+# filtered_signal = [] 
+# startTime = round(utime.time())
+xfilter = ButterworthFilter(12, 2, 0.01)
+yfilter = ButterworthFilter(12, 2, 0.01)
+run = Pin('GP26', Pin.IN)
 
 def update_motors(tim):
+    safety = 0.8
     x, y = test_joystick.get_values()
     x = xfilter.update(x)
     y = yfilter.update(y)
-    L = 0.9*min(max(x+y,-1),1)
-    R = 0.9* min(max(x-y,-1),1)
+    L = safety*0.9*min(max(x+y,-1),1)
+    R = safety*0.9*min(max(x-y,-1),1)
     L_motor.set_speed(L)
     R_motor.set_speed(R)
     if not run.value():
@@ -84,8 +86,8 @@ def update_motors(tim):
 
 test_joystick = Joystick('GP28', 'GP27')
 
-L_motor = Motor('GP0', 'GP1', 'GP14')
-R_motor = Motor('GP2', 'GP3', 'GP15')
+L_motor = Motor('GP0', 'GP1', 'GP8')
+R_motor = Motor('GP2', 'GP3', 'GP9')
 
 L_motor.enable()
 R_motor.enable()
@@ -93,5 +95,3 @@ R_motor.enable()
 tim = Timer()
 
 tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
-
-
