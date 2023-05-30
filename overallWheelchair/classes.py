@@ -1,17 +1,4 @@
-'''
-
-PROCESS 1 PSEUDOCODE
-'''
-
-# tim code
-from motor_controller import Motor
-from joystick import Joystick
-from machine import Timer, Pin
-
 import math
-import time
-
-# filter code
 
 class ButterworthFilter:
     def __init__(self, order, cutoff_freq, sampling_period):
@@ -57,41 +44,3 @@ class ButterworthFilter:
         self.outputs.append(output)
 
         return output
-
-Bfilter = ButterworthFilter(9, 3, 0.01)
-
-
-
-
-xfilter = ButterworthFilter(9, 3, 0.01)
-yfilter = ButterworthFilter(9, 3, 0.01)
-
-run = Pin('GP16', Pin.IN)
-
-def update_motors(tim):
-    x, y = test_joystick.get_values()
-    x = xfilter.update(x)
-    y = yfilter.update(y)
-    L = 0.9*min(max(x+y,-1),1)
-    R = 0.9* min(max(x-y,-1),1)
-    L_motor.set_speed(L)
-    R_motor.set_speed(R)
-    if not run.value():
-        L_motor.disable()
-        R_motor.disable()
-        tim.deinit()
-
-
-test_joystick = Joystick('GP28', 'GP27')
-
-L_motor = Motor('GP0', 'GP1', 'GP14')
-R_motor = Motor('GP2', 'GP3', 'GP15')
-
-L_motor.enable()
-R_motor.enable()
-
-tim = Timer()
-
-tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
-
-
