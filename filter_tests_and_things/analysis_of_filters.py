@@ -18,7 +18,7 @@ def calculate_butterworth_highpass_coeffs(cutoff_freq, sample_rate, order):
     return b, a
 
 # Example usage
-cutoff_freq = 3  # Cutoff frequency in Hz
+cutoff_freq = 1.5  # Cutoff frequency in Hz
 sample_rate = 100  # Sample rate in Hz
 order = 9  # Filter order
 
