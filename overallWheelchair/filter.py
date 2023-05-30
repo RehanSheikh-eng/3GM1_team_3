@@ -1,10 +1,11 @@
-#change 1
+#change 2
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
 from collections import deque
 import math
 import time
+from functions import log_data
 
 # filter code
 
@@ -74,8 +75,8 @@ run = Pin('GP26', Pin.IN)
 def update_motors(tim):
     safety = 1
     x, y = test_joystick.get_values()
-    x = xfilter.update(x)
-    y = yfilter.update(y)
+    x_filter = xfilter.update(x)
+    y_filter = yfilter.update(y)
     L = safety*1*min(max(x+y,-1),1)
     R = safety*1*min(max(x-y,-1),1)
     L_motor.set_speed(L)
@@ -84,6 +85,8 @@ def update_motors(tim):
         print("finish")
         L_motor.disable()
         R_motor.disable()
+        log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
+
         tim.deinit()
 
 
