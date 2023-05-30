@@ -1,6 +1,3 @@
-'''
-PROCESS 1 PSEUDOCODE
-'''
 from machine import Pin, Timer
 import math
 from Sensor_Data_Collection.modules.GPSModule import GPSModule
@@ -8,61 +5,82 @@ from Sensor_Data_Collection.modules.AccelerometerModule import Accel
 from Sensor_Data_Collection.modules.L2S2Module import L2S2Module
 from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
 from Sensor_Data_Collection.modules.SittingSwitchModule import SittingSwitch
+from Sensor_Data_Collection.modules.JoystickModule import Joystick
 
 # Debug mode
 DEBUG = True 
 
 # Define PINS/CONSTS
+# JOYSTICK
+JOYSTICK_V_X_PIN = 28
+JOYSTICK_V_Y_PIN = 26
+
+# ACCELORMETER
 ACCEL_SDA_PIN = 0
 ACCEL_SCL_PIN = 1
 ACCEL_I2C_ID = 0
 
+# DISTANCE SENSOR
 DIST_ID = 0
 DIST_SDA_PIN = 0
 DIST_SCL_PIN = 1
 DIST_MA_ORDER = 3
 
+# GPS SENSOR
 GPS_UART_ID = 1
 GPS_UART_BAUD_RATE = 9600
 GPS_TX_PIN = 4
 GPS_RX_PIN = 5
 
+# SPEAKER PIN
 SPEAKER_PIN = 15
 
+# SWITCH PIN
 SWITCH_PIN = None
 
-# Intit Timers scales (ms)
+# Init timers durations (ms)
 time_crash_detection = 10
 
 
 
 
+
 # Initialise the Pico
-#distance_sensor = DistanceSensor(id = DIST_ID, 
-#                                sda = DIST_SDA_PIN,
-#                                scl = DIST_SCL_PIN
-#                                )
+distance_sensor = DistanceSensor(id = DIST_ID, 
+                               sda = DIST_SDA_PIN,
+                               scl = DIST_SCL_PIN
+                               )
+
 accel = Accel(i2c_id=ACCEL_I2C_ID,
             sda_pin=ACCEL_SDA_PIN,
             scl_pin=ACCEL_SCL_PIN
             )
+
 gps = GPSModule(uart_id=GPS_UART_ID,
                 baud_rate=GPS_UART_BAUD_RATE,
                 tx_pin_id=GPS_TX_PIN,
                 rx_pin_id=GPS_RX_PIN
                 )
+
+joystick = Joystick(X_pin=JOYSTICK_V_X_PIN,
+                    Y_pin=JOYSTICK_V_Y_PIN
+                    )
+
 l2s2 = L2S2Module()
 l2s2.boot_L2S2()
+
+
 #sitting_switch = SittingSwitch(pin=SWITCH_PIN)
 #speaker = Speaker(SPEAKER_PIN, duty_factor = 5000) # duty_factor controls volume
 
 # Initialise Sensor timers
-#joystick_timer = Timer(-1)
+joystick_timer = Timer(-1)
 accelerometer_timer = Timer(-1)
 #motor_timer = Timer(-1)
 gps_timer = Timer(-1)
-#distance_sensor_timer = Timer(-1)
+distance_sensor_timer = Timer(-1)
 L2S2_timer = Timer(-1)
+
 
 
 # Initialise Script timers
@@ -71,12 +89,17 @@ crash_detection_timer = Timer(-1)
 
 
 # Initialise Data storage
-sensor_data = {"accel": None, "gps": None, "distance": None}
+sensor_data = {"accel": None, "gps": None, "distance": None, "joystick": None}
 previous_data = {"accel": None, "gps": None}
 
 
 
 current_true_crashes = 0
+
+
+
+
+
 
 # Data collection ISRs
 def accel_isr(timer):
@@ -90,6 +113,23 @@ def gps_isr(timer):
 
 def distance_isr(timer):
     sensor_data["distance"] = distance_sensor.get_smooth_distance()
+
+def joystick_isr(timer):
+    sensor_data["joystick"] = joystick.get_values()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Data Processing ISR
 def crash_detection_isr(timer):
@@ -110,7 +150,6 @@ def crash_detection_isr(timer):
             if DEBUG:
                 print("Crash Detected")
                 
-
 # L2S2 Data Sending ISR
 def L2S2_isr(timer):
     # Assuming that the data to be sent is stored in sensor_data
@@ -124,12 +163,20 @@ def L2S2_isr(timer):
                     units="degrees"
                     )
 
+        l2s2.send_data(record_id="110", 
+                    plate_template_id="6e0485b5-cd17-4438-aff8-afe0578ed71f", 
+                    control_id="4", 
+                    _type=5, 
+                    content=sensor_data["gps"]["latitude"], # or any relevant content
+                    units="degrees"
+                    )
+
 # Data Timers
 accelerometer_timer.init(period=10, mode=Timer.PERIODIC, callback=accel_isr)
 gps_timer.init(period=1000, mode=Timer.PERIODIC, callback=gps_isr)
-#distance_sensor_timer.init(period=-10, mode=Timer.PERIODIC, callback=distance_isr)
+joystick_timer.init(period=10, mode=Timer.PERIODIC, callback=joystick_isr)
+distance_sensor_timer.init(period=-10, mode=Timer.PERIODIC, callback=distance_isr)
 #motor_timer.init(period=60000, mode=Timer.PERIODIC, callback=)
-#joystick_timer.init(period=60000, mode=Timer.PERIODIC, callback=)
 
 
 
