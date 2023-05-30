@@ -1,15 +1,30 @@
-"""
+# --- CRASH PREVENTION ---
 
-All functions that are used in main.py are stored here
-
-"""
-
-# import libraries
+# INITIALISATIONS
 from collections import deque
+from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
 from picozero import Speaker
 import utime as time
 
-# warning functions
+DIST_ID = 0
+DIST_SDA_PIN = 4
+DIST_SCL_PIN = 5
+SPEAKER_PIN = 17
+
+current_total_crashes = 0
+
+distance_sensor = DistanceSensor(id = DIST_ID, 
+                                sda = DIST_SDA_PIN,
+                                scl = DIST_SCL_PIN
+                                )
+speaker = Speaker(SPEAKER_PIN, initial_freq=750, duty_factor = 5000)
+
+distance_buffer = [501,501,501]
+
+parking = False
+cur_time = 0
+
+# FUNCTION
 def startCrashPrevention(distance, speed, speed_threshold = 1, beep_width = 100):
     global current_total_crashes
     global speedAmplitude
@@ -52,55 +67,8 @@ def startCrashPrevention(distance, speed, speed_threshold = 1, beep_width = 100)
         recent_crash = False
         speaker.off()
 
-
-def startCrashDetection():
-    pass
-
-def joyStickPullBack():
-    pass
-
-
-# filtering and tremor tracking
-
-def findFilteredJoystickPosition():
-    pass
-
-def startTremorAnalysis():
-    pass
-
-
-# control
-
-def speedEstimator():
-    pass
-
-def positionToSpeed():
-    pass
-
-def positionToAngularVelocity():
-    pass
-
-def findMotorSignalsFromSpeeds():
-    pass
-
-
-
-def updateMotorSpeeds():
-    pass
-
-
-# usage tracking
-
-def getDistance():
-    pass
-
-def startSittingDuration():
-    pass
-
-
-def getGPSdata():
-    pass
-
-# L2S2
-
-# 
+# IN MAIN LOOP
+distance_buffer.pop(0)
+distance_buffer.append(distance_sensor.get_distance())
+distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
+startCrashPrevention(distance, speed)
