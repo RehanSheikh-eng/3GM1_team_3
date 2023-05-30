@@ -71,23 +71,33 @@ xfilter = ButterworthFilter(12, 2, 0.01)
 yfilter = ButterworthFilter(12, 2, 0.01)
 
 run = Pin('GP26', Pin.IN)
+filename = 'joystick_data.csv'
+data = {'x': None, 'y': None, 'filtered_x': None, 'filtered_y': None}
+with open(filename, "w") as file:
+    # Write the header to the file
+    file.write(','.join([key for key in data.keys()]) + '\n')
+
 
 def update_motors(tim):
-    safety = 1
-    x, y = test_joystick.get_values()
-    x_filter = xfilter.update(x)
-    y_filter = yfilter.update(y)
-    L = safety*1*min(max(x_filter+y_filter,-1),1)
-    R = safety*1*min(max(x_filter-y_filter,-1),1)
-    L_motor.set_speed(L)
-    R_motor.set_speed(R)
-    if not run.value():
-        print("finish")
-        L_motor.disable()
-        R_motor.disable()
-        log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
+    with open(filename, "w") as file:
+        # Write the header to the file
+        safety = 1
+        x, y = test_joystick.get_values()
+        x_filter = xfilter.update(x)
+        y_filter = yfilter.update(y)
 
-        tim.deinit()
+        data = {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter}
+        file.write(','.join([str(value) for value in data.values()]) + '\n')
+
+        L = safety*1*min(max(x_filter+y_filter,-1),1)
+        R = safety*1*min(max(x_filter-y_filter,-1),1)
+        L_motor.set_speed(L)
+        R_motor.set_speed(R)
+        if not run.value():
+            print("finish")
+            L_motor.disable()
+            R_motor.disable()
+            tim.deinit()
 
 
 test_joystick = Joystick('GP28', 'GP27')

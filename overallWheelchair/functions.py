@@ -221,19 +221,3 @@ def getGPSdata():
 
 # 
 import uos
-
-def log_data(filename, data):
-    try:
-        if filename not in uos.listdir():
-            # Open the file for writing if it doesn't exist
-            with open(filename, "w") as file:
-                # Write the header to the file
-                file.write(','.join([key for key in data.keys()]) + '\n')
-
-        # Open the file for appending
-        with open(filename, "a") as file:
-            # Write the data to the file
-            file.write(','.join([str(value) for value in data.values()]) + '\n')
-
-    except Exception as e:
-        print("Error writing to file: ", e)
