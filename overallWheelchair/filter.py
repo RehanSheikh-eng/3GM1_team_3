@@ -63,16 +63,9 @@ Bfilter = ButterworthFilter(9, 3, 0.01)
 
 
 
-filtered_signal = [] 
-startTime = round(utime.time())
 xfilter = ButterworthFilter(9, 3, 0.01)
 yfilter = ButterworthFilter(9, 3, 0.01)
-samplingFrequency = 100 
-resetTime = 0
-stopDuration = None
-stopSignal = 0
-speedAmplitudeLog = []
-angSpeedAmplitudeLog = []
+
 run = Pin('GP16', Pin.IN)
 
 def update_motors(tim):
