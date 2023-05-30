@@ -118,6 +118,8 @@ sitting_duration = 0
 start_time_sitting = 0
 prev_record_time = 0
 latch = 0
+stopSignal = 0
+stopDuration = 0
 
 
 # ----- STAGE 2 - READ VARIABLES IN -----

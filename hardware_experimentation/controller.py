@@ -19,6 +19,7 @@ except ModuleNotFoundError:
 
 global leftMotor, rightMotor
 
+
 # next define the necessary functions
 
 
@@ -182,6 +183,8 @@ def calcJoystickSpeedFromHealthScore(healthScore):
 
 # other functions
 # INITIALISE KEY VARS
+
+stopDuration = 0
 speedAmpltitude = 1
 angSpeedAmpltitude = 1
 xPosBuffer = [0] * 500

@@ -80,7 +80,7 @@ stopDuration = None
 stopSignal = 0
 speedAmplitudeLog = []
 angSpeedAmplitudeLog = []
-stop = Pin('GP16', Pin.IN)
+run = Pin('GP16', Pin.IN)
 
 def update_motors(tim):
     x, y = test_joystick.get_values()
@@ -90,7 +90,7 @@ def update_motors(tim):
     R = 0.9* min(max(x-y,-1),1)
     L_motor.set_speed(L)
     R_motor.set_speed(R)
-    if stop.value():
+    if not run.value():
         L_motor.disable()
         R_motor.disable()
         tim.deinit()
