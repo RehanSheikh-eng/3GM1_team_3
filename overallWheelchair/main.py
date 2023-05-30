@@ -84,8 +84,30 @@ tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 
 
 # ---- STAGE 1. IMPORT SCRIPTS, INITIALISE CLASSES, INITIALISE VARIABLES------
-# ---- STAGE 1. IMPORT SCRIPTS and initialise classes------
 # initalise l2s2
+import functions
+
+from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
+
+from picozero import Speaker
+
+DIST_ID = 0
+DIST_SDA_PIN = 4
+DIST_SCL_PIN = 5
+SPEAKER_PIN = 17
+
+current_total_crashes = 0
+
+distance_sensor = DistanceSensor(id = DIST_ID, 
+                                sda = DIST_SDA_PIN,
+                                scl = DIST_SCL_PIN
+                                )
+speaker = Speaker(SPEAKER_PIN, initial_freq=750, duty_factor = 5000)
+
+distance_buffer = [501,501,501]
+
+parking = False
+cur_time = 0
 
 
 # ----- STAGE 2 - READ VARIABLES IN -----
