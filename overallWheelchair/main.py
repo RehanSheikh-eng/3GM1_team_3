@@ -1,39 +1,46 @@
-from motor_controller import Motor
-from joystick import Joystick
+# --- STAGE 1 - IMPORTS + INITIALISATIONS (OUTSIDE MAIN LOOP) ---
+
+# Import libraries
 from machine import Timer, Pin
 from collections import deque
 import math
-import time
+import utime as time
+from picozero import Speaker
 
-
-# ---- STAGE 1. IMPORT SCRIPTS, INITIALISE CLASSES, INITIALISE VARIABLES (OUTSIDE MAIN LOOP) ------
-# initalise l2s2
+# Import functions and classes
 import functions
-
+from motor_controller import Motor
+from joystick import Joystick
+from Sensor_Data_Collection.modules.GPSModule import GPSModule
+from Sensor_Data_Collection.modules.AccelerometerModule import Accel
+from Sensor_Data_Collection.modules.L2S2Module import L2S2Module
 from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
 from Sensor_Data_Collection.modules.SittingSwitchModule import SittingSwitch
 
-from picozero import Speaker
+# Set pins
+ACCEL_SDA_PIN = 0
+ACCEL_SCL_PIN = 1
+ACCEL_I2C_ID = 0
 
 DIST_ID = 0
 DIST_SDA_PIN = 4
 DIST_SCL_PIN = 5
+
+GPS_UART_ID = 1
+GPS_UART_BAUD_RATE = 9600
+GPS_TX_PIN = 4
+GPS_RX_PIN = 5
+
 SPEAKER_PIN = 17
 
 SWITCH_PIN = None
 
+# Initialise variables
 current_total_crashes = 0 
 current_true_crashes = 0
 
-distance_sensor = DistanceSensor(id = DIST_ID, 
-                                sda = DIST_SDA_PIN,
-                                scl = DIST_SCL_PIN
-                                )
-pressure_plate = SittingSwitch(SWITCH_PIN)
-speaker = Speaker(SPEAKER_PIN, initial_freq=750, duty_factor = 5000)
 
 distance_buffer = [501,501,501]
-
 parking = False
 cur_time = 0
 
@@ -48,32 +55,30 @@ speed_buffer = [0,0]
 distance_speedEstimator = 0
 distance_travelled = 0
 
+# Initialise classes
+distance_sensor = DistanceSensor(id = DIST_ID, 
+                                sda = DIST_SDA_PIN,
+                                scl = DIST_SCL_PIN
+                                )
+pressure_plate = SittingSwitch(SWITCH_PIN)
+speaker = Speaker(SPEAKER_PIN, initial_freq=750, duty_factor = 5000)
 
-# ----- STAGE 2 - READ VARIABLES IN -----
+
+# --- STAGE 2 - READ VARIABLES ---
 
 # read input from joystick to buffer
 # read input from accelerometer to accel buffer
 # read input from motors
 # read input from gps
 # read pressure plate input
-# read distance sensor
 
-# Read distance sensor
+# Read distance sensor and compute moving average
 distance_buffer.pop(0)
 distance_buffer.append(distance_sensor.get_distance())
 distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
 
-# ----- STAGE 3 - WARNING SYSTEMS ------
-# 
-# crash prevention function
-# crash detection
-# sudden joystick pullback stop
 
-functions.startCrashPrevention()
-functions.startCrashPrevention()
-
-
-# ---- STAGE 4 - FILTERING AND TREMOR TRACKING ----
+# ---- STAGE 3 - FILTERING AND TREMOR TRACKING ----
 
 
 
@@ -111,20 +116,31 @@ tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 
 
 
-# ---- STAGE 5 - CALCULATE MOTOR DESIRED SIGNALS FROM CONTROL THEORY ------
+# ---- STAGE 4 - CALCULATE MOTOR DESIRED SIGNALS FROM CONTROL THEORY ------
 
 
-# ----- STAGE 6 - SEND SIGNALS TO MOTOR -----
+# ----- STAGE 5 - SEND SIGNALS TO MOTOR -----
+
+
+# ----- STAGE 6 - WARNING SYSTEMS ------
+
+# estimate speed
+# crash prevention function
+# crash detection
+# sudden joystick pullback stop
+
+speed_buffer[1] = functions.speedEstimator(speed_buffer[0], leftMotorSignal, rightMotorSignal, leftMotorSignal_prev, rightMotorSignal_prev, sensor_data["accel"][1])
+functions.startCrashPrevention(distance, speed_buffer[1], speaker)
+functions.startCrashPrevention()
+
 
 # ----- STAGE 7 - USAGE TRACKING ------
 
-# estimate speed
 # estimate distance travelled
 # count sitting duration
 # GPS
 
-speed = functions.speedEstimator(speed_buffer[0], leftMotorSignal, rightMotorSignal, leftMotorSignal_prev, rightMotorSignal_prev, sensor_data["accel"][1])
-distance_travelled += getDistance(speed_buffer, sensor_data, previous_data, gps)
+distance_travelled += functions.getDistance(speed_buffer, sensor_data, previous_data, gps)
 
 
 # ----- STAGE 8 - L2S2 (Per minute) ------
