@@ -83,11 +83,12 @@ tim = Timer()
 tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
 
 
-# ---- STAGE 1. IMPORT SCRIPTS, INITIALISE CLASSES, INITIALISE VARIABLES------
+# ---- STAGE 1. IMPORT SCRIPTS, INITIALISE CLASSES, INITIALISE VARIABLES (OUTSIDE MAIN LOOP) ------
 # initalise l2s2
 import functions
 
 from Sensor_Data_Collection.modules.DistanceSensorModule import DistanceSensor
+from Sensor_Data_Collection.modules.SittingSwitchModule import SittingSwitch
 
 from picozero import Speaker
 
@@ -96,18 +97,27 @@ DIST_SDA_PIN = 4
 DIST_SCL_PIN = 5
 SPEAKER_PIN = 17
 
-current_total_crashes = 0
+SWITCH_PIN = None
+
+current_total_crashes = 0 
+current_true_crashes = 0
 
 distance_sensor = DistanceSensor(id = DIST_ID, 
                                 sda = DIST_SDA_PIN,
                                 scl = DIST_SCL_PIN
                                 )
+pressure_plate = SittingSwitch(SWITCH_PIN)
 speaker = Speaker(SPEAKER_PIN, initial_freq=750, duty_factor = 5000)
 
 distance_buffer = [501,501,501]
 
 parking = False
 cur_time = 0
+
+sitting_duration = 0
+start_time_sitting = 0
+prev_record_time = 0
+latch = 0
 
 
 # ----- STAGE 2 - READ VARIABLES IN -----
@@ -119,7 +129,11 @@ cur_time = 0
 # read pressure plate input
 # read distance sensor
 # estimate speed
-# 
+
+# Read distance sensor
+distance_buffer.pop(0)
+distance_buffer.append(distance_sensor.get_distance())
+distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
 
 # ----- STAGE 3 - WARNING SYSTEMS ------
 # 

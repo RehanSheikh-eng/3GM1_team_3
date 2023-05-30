@@ -94,8 +94,21 @@ def updateMotorSpeeds():
 def getDistance():
     pass
 
-def startSittingDuration():
-    pass
+def start_sitting_duration(pressure_plate):
+    global start_time_sitting
+    global prev_record_time
+    global sitting_duration
+    global latch
+
+    if pressure_plate.switch.is_active and latch == 0:
+        start_time_sitting = time.time()
+        prev_record_time = start_time_sitting
+        latch = 1
+    elif pressure_plate.switch.is_active and latch == 1:
+        sitting_duration += time.time() - prev_record_time
+        prev_record_time = time.time()
+    elif pressure_plate.switch.is_inactive and latch == 1:
+        latch = 0
 
 
 def getGPSdata():
