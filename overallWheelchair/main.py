@@ -121,11 +121,15 @@ latch = 0
 stopSignal = 0
 stopDuration = 0
 
+speed_buffer = [0,0]
+distance_speedEstimator = 0
+distance_travelled = 0
+
 
 # ----- STAGE 2 - READ VARIABLES IN -----
 
 # read input from joystick to buffer
-# read input from accelerometer to accel buffer 
+# read input from accelerometer to accel buffer
 # read input from motors
 # read input from gps
 # read pressure plate input
@@ -157,6 +161,8 @@ distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
 # count sitting duration
 # GPS
 
+distance_travelled += getDistance(speed_buffer, sensor_data, previous_data, gps)
+
 
 # ----- STAGE 8 - L2S2 (Per minute) ------
 
@@ -178,8 +184,8 @@ def speedEstimator(prevSpeed,leftMotorSignal,rightMotorSignal
     # estimate curr speed assuming joystick proportional to speed accounting for lag
     # improve confidence by using acceleration to adjust
 
-    leftMotorSignal_approx = (leftMotorSignal - leftMotorSignal_prev)*(1 - math.exp(-time_step) / tau) + leftMotorSignal_prev # exp will be a constant 
-    rightMotorSignal_approx = (rightMotorSignal - rightMotorSignal_prev)*(1 - math.exp(-time_step) / tau) + rightMotorSignal_prev
+    leftMotorSignal_approx = (leftMotorSignal - leftMotorSignal_prev)*(1 - math.exp(-time_step / tau)) + leftMotorSignal_prev # REPLACE EXP TERM WITH CONSTANT
+    rightMotorSignal_approx = (rightMotorSignal - rightMotorSignal_prev)*(1 - math.exp(-time_step / tau)) + rightMotorSignal_prev
     speed_motor = (leftMotorSignal_approx + rightMotorSignal_approx) / 2 # assuming centre of mass equidistant between wheels
 
 

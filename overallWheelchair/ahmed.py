@@ -105,3 +105,33 @@ def start_sitting_duration(pressure_plate):
         prev_record_time = time.time()
     elif pressure_plate.switch.is_inactive and latch == 1:
         latch = 0
+
+
+# --- DISTANCE CALCULATION ---
+
+# INITIALISATIONS
+speed_buffer = [0,0]
+distance_speedEstimator = 0
+distance_travelled = 0
+
+# FUNCTION
+def getDistance(speed_buffer, sensor_data, previous_data, gps, var_speedEstimator = 1, var_GPS = 1, time_step = 0.01): # TUNE VARIANCES
+
+    global distance_speedEstimator
+
+    distance_speedEstimator += 0.5 * time_step * (speed_buffer[0] + speed_buffer[1]) # Integrate speed from speedEstimator()
+
+    if previous_data["gps"] != sensor_data["gps"]:
+        distance_GPS = gps.get_relative_position(previous_data["gps"], sensor_data["gps"])
+        distance_kalman += (var_GPS * distance_speedEstimator + var_speedEstimator * distance_GPS) / (var_GPS + var_speedEstimator)
+
+        distance_speedEstimator = 0
+
+        return distance_kalman
+
+    else:
+        return 0
+
+# IN MAIN LOOP
+
+distance_travelled += getDistance(speed_buffer, sensor_data, previous_data, gps)

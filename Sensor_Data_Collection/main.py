@@ -76,9 +76,6 @@ previous_data = {"accel": None, "gps": None}
 
 
 
-
-
-
 current_true_crashes = 0
 
 # Data collection ISRs
