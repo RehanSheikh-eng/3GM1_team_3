@@ -109,6 +109,9 @@ distance_buffer = [501,501,501]
 parking = False
 cur_time = 0
 
+stopSignal = 0
+stopDuration = 0
+
 
 # ----- STAGE 2 - READ VARIABLES IN -----
 
