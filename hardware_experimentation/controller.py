@@ -131,7 +131,7 @@ def stopIfPullBackDetected(ypos,freq,i):
     # also rate of change must be big 
     # in last second must value must be greater than 0.5
     ypos = list(ypos)
-    currPosTest  = (np.average(ypos[-10:-1]) < -0.5 )
+    currPosTest  = (math.average(ypos[-10:-1]) < -0.5 )
     rate = (ypos[-1] - ypos[-(freq+1)])/(deltaT * freq )
     #print("rate={}".format(rate))
     rateHigh = (rate < cutoff)
