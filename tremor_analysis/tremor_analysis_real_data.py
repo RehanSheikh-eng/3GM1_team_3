@@ -93,7 +93,7 @@ def readjoystickTextFile(fileName):
     yPos_vector = []
     iteration = []
     j = 0
-    with open('tremor_analysis/JoystickTextFiles/{}'.format(fileName), 'r') as file:
+    with open('./JoystickTextFiles/{}'.format(fileName), 'r') as file:
         for line in file:
             j += 1
             nums = ((line.strip().split(','))) # Convert each line to a float and append to the data list
@@ -107,9 +107,15 @@ def readjoystickTextFile(fileName):
 
 # Main loop for signal acquisition and analysis
 
-listXPOS, listYPOS = readjoystickTextFile(fileName = 'sudden_Stop_100hz_try2.txt')
-
-input_data =listXPOS
+listXPOS, listYPOS = readjoystickTextFile(fileName = 'tremor_simulator_100HZ.txt')
+position= []
+for i in range(len(listXPOS)-1):
+    position.append( listXPOS[i] + listYPOS[i]*1j)
+plt.plot(listXPOS)
+plt.plot(listYPOS)
+plt.plot(position)
+plt.show()
+input_data =listYPOS
 t = np.arange(0, len(input_data)) * sampling_freq
 
 # arrays for analysis

@@ -6,7 +6,7 @@ import numpy as np
 # Sampling parameters
 sampling_freq = 1000  # Sampling frequency in Hz
 num_samples = 10000    # Number of samples to acquire
-#generated sine wave parameters
+# generated sine wave parameters
 frequency = 5  # Frequency of the sine wave in Hz
 amplitude = 1.0  # Amplitude of the sine wave
 duration = 10.0  # Duration of the signal in seconds
