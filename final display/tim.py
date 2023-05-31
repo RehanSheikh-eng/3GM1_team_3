@@ -79,44 +79,41 @@ class ButterworthFilter:
 # stops = []
 # filtered_signal = [] 
 # startTime = round(utime.time())
-xfilter_ = ButterworthFilter(9, 2.5, 0.01)
-yfilter_ = ButterworthFilter(9, 2.5, 0.01)
+xfilter_ = ButterworthFilter(9, 0.1, 0.005)
+yfilter_ = ButterworthFilter(9, 0.1, 0.005)
 
 run = Pin('GP26', Pin.IN)
 
 def ahmed(tim):
-    safety = 1
-    x, y =  test_joystick.get_values()
-    print(x,y)
-    #x_filter = x
-    #y_filter = y
-    x_filter = xfilter_.update(x)
-    y_filter = yfilter_.update(y)
-    print('xy raw',x_filter,y_filter)
-    w = positionToAngularVelocity(y)
-    v = positionToSpeed(x)
-    print('speeds',v,w)
-    L_,R_ = findMotorSignalsFromSetSpeeds(v,w)
-    print('motor signals',L_,R_)
-    #left motor wired up opposite
-    #L = min(max(L,-1),1)
-    #R = min(max(R,-1),1)
-    #L = safety*1*min(max(x_filter+y_filter,-1),1)
-    #R = safety*1*min(max(x_filter-y_filter,-1),1)
-    #R = 0.3
-    #L = 0.3
-    #L = -L
-    #print('lR: ',L,R)
-    #log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
-    L_motor.set_speed(L_)
-    R_motor.set_speed(R_)
     if not run.value():
         print("finish")
         L_motor.disable()
         R_motor.disable()
-        
-
         tim.deinit()
+        
+    safety = 0.5
+    x, y =  test_joystick.get_values()
+    print(x,y)
+#     x_filter = x
+#     y_filter = y
+    x_filter = xfilter_.update(x)
+    y_filter = yfilter_.update(y)
+#     print('xy raw',x_filter,y_filter)
+#     w = positionToAngularVelocity(y)
+#     
+#     v = positionToSpeed(x)
+#     print('speeds',v,w)
+#     L_,R_ = findMotorSignalsFromSetSpeeds(v,w)
+#     print('motor signals',L_,R_)
+#     left motor wired up opposite
+#     L = min(max(L,-1),1)
+#     R = min(max(R,-1),1)
+    L = safety*0.9*min(max((x_filter+y_filter)**3,-1),1)
+    R = safety*0.9*min(max((x_filter-y_filter)**3,-1),1)
+    print('lR: ',L,R)
+    log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
+    L_motor.set_speed(L)
+    R_motor.set_speed(R)
     
     # calculate distance
     distance_buffer.pop(0)
@@ -140,5 +137,15 @@ R_motor.enable()
 
 tim = Timer()
 
-tim.init(mode=Timer.PERIODIC, freq=100, callback=ahmed)
+while False:
+    L_motor.set_speed(0.01)
+    R_motor.set_speed(0.01)
+    time.sleep(2)
+    L_motor.set_speed(0.8)
+    R_motor.set_speed(0.8)
+    time.sleep(2)    
+    #update_motors(tim, distance_sensor, speaker)
+    #time.sleep(0.01)
+
+tim.init(mode=Timer.PERIODIC, freq=200, callback=ahmed)
  
