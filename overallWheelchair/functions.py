@@ -226,7 +226,7 @@ def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.4,po
     else:
         return 0
 
-def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.05,motorVoltageConstant = 1):
+def findMotorSignalsFromSetSpeeds(v,omega,l = 0.2,wheelRadius = 0.05,motorVoltageConstant = 1):
     """
     this function takes in the desired speed and and angular velocity signals and calculates the motor input signals
 
@@ -250,6 +250,8 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.05,motorVoltag
     leftMotorSignal = leftWheelAngVel * motorVoltageConstant
     rightMotorSignal = rightWheelAngVel * motorVoltageConstant
     return leftMotorSignal, rightMotorSignal
+
+
 
 
 def updateMotorSpeeds():
@@ -316,7 +318,7 @@ def log_data(filename, data):
     except Exception as e:
         print("Error writing to file: ", e)
 
-def rateLimitControl(L,R,L_prev,R_prev,lowSpeedRateMax = 0.01,highSpeedRateMax = 0.02,decelRate=0.1):
+def rateLimitControl(L,R,L_prev,R_prev,lowSpeedRateMax = 0.005,highSpeedRateMax = 0.005,decelRate=0.01):
     """
     function to limit change in motor rate in response to instability issues
     :param @L - current L motor position
@@ -328,16 +330,16 @@ def rateLimitControl(L,R,L_prev,R_prev,lowSpeedRateMax = 0.01,highSpeedRateMax =
     # first limit L
 
     # decide which rate to use
-    if L < 0.3 or R < 0.3:
+    if abs(L) < 0.3 or abs(R) < 0.3:
         rateMax = lowSpeedRateMax
-    elif L >=0.3 and R  >= 0.3:
+    elif abs(L) >=0.3 and abs(R)  >= 0.3:
         rateMax = highSpeedRateMax
     else:
         rateMax = lowSpeedRateMax
         print("Unusual condition in rate decider loop")
-    if deltaL < 0:
-        rateMax = decelRate
     deltaL = L - L_prev
+    if abs(L) < abs(L_prev) or abs(R) < abs(R_prev):
+        rateMax = decelRate
     if abs(deltaL) <= rateMax: # set values if not rate limited
         L_sp = L_prev + deltaL
     elif deltaL < 0:
@@ -358,4 +360,3 @@ def rateLimitControl(L,R,L_prev,R_prev,lowSpeedRateMax = 0.01,highSpeedRateMax =
     else:
         print("Unexpected condition detected in R")
     return L_sp, R_sp
-
