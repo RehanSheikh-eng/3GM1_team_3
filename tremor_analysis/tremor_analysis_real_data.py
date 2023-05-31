@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 
 
+
+
 # Sampling parameters
 sampling_freq = 100  # Sampling frequency in Hz
 num_samples = 1000    # Number of samples to acquire
@@ -130,6 +132,7 @@ intensity_of_whole_signal = []
 tremor_present = False  # initial cond for the loops to work
 i = 0
 tremor_count = 0
+input_data= extracted_tremor_data
 
 while i <= (len(input_data)-1):
     signal_buffer.extend([input_data[i]])

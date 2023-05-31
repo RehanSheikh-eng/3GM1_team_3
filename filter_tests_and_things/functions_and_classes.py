@@ -1,3 +1,5 @@
+'''functions and classes used for test, some were deleted once we decided they were not needed'''
+
 import numpy as np
 import math
 
