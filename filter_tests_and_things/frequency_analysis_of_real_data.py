@@ -16,6 +16,6 @@ positive_freq = freq[:len(data)//2]  # Positive frequencies only (up to Nyquist 
 plt.plot(positive_freq, np.abs(fft_data[:len(data)//2]))
 plt.xlabel('Frequency')
 plt.ylabel('Magnitude')
-plt.title('Frequency Spectrum of Data')
+plt.title('Frequency Spectrum of Extracted Tremor Data')
 plt.show()
 

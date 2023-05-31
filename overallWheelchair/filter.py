@@ -1,15 +1,23 @@
-'''
-
-PROCESS 1 PSEUDOCODE
-'''
-
-# tim code
+#change 4
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
 
 import math
-import time
+import utime as time
+from functions import log_data
+from crash_prevention import startCrashPrevention
+from DistanceSensorModule import DistanceSensor
+from picozero import Speaker
+
+# define objects involved in crash detection program
+distance_sensor = DistanceSensor(0,4,5)
+speaker = Speaker(14, initial_freq=750, duty_factor = 7000)
+current_total_crashes = 0 
+current_true_crashes = 0
+parking = False
+cur_time = 0
+distance_buffer = [501,501,501]
 
 # filter code
 
@@ -61,20 +69,49 @@ class ButterworthFilter:
 xfilter = ButterworthFilter(9, 3, 0.01)
 yfilter = ButterworthFilter(9, 3, 0.01)
 
-run = Pin('GP16', Pin.IN)
+
+# speedAmpltitude = 1
+# angSpeedAmpltitude = 1
+# xPosBuffer = [0] * 500
+# xPosBuffer = deque(xPosBuffer,maxlen=500)
+# yPosBuffer = [0] * 500
+# yPosBuffer = deque(yPosBuffer,maxlen=500)
+# testx = []
+# testy = []
+# stops = []
+# filtered_signal = [] 
+# startTime = round(utime.time())
+xfilter = ButterworthFilter(12, 2, 0.01)
+yfilter = ButterworthFilter(12, 2, 0.01)
+
+run = Pin('GP26', Pin.IN)
+filename = 'joystick_data.csv'
+data = {'x': None, 'y': None, 'filtered_x': None, 'filtered_y': None}
+with open(filename, "w") as file:
+    # Write the header to the file
+    file.write(','.join([key for key in data.keys()]) + '\n')
+
 
 def update_motors(tim):
-    x, y = test_joystick.get_values()
-    x = xfilter.update(x)
-    y = yfilter.update(y)
-    L = 0.9*min(max(x+y,-1),1)
-    R = 0.9* min(max(x-y,-1),1)
-    L_motor.set_speed(L)
-    R_motor.set_speed(R)
-    if not run.value():
-        L_motor.disable()
-        R_motor.disable()
-        tim.deinit()
+    with open(filename, "w") as file:
+        # Write the header to the file
+        safety = 1
+        x, y = test_joystick.get_values()
+        x_filter = xfilter.update(x)
+        y_filter = yfilter.update(y)
+
+        data = {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter}
+        file.write(','.join([str(value) for value in data.values()]) + '\n')
+
+        L = safety*1*min(max(x_filter+y_filter,-1),1)
+        R = safety*1*min(max(x_filter-y_filter,-1),1)
+        L_motor.set_speed(L)
+        R_motor.set_speed(R)
+        if not run.value():
+            print("finish")
+            L_motor.disable()
+            R_motor.disable()
+            tim.deinit()
 
 
 test_joystick = Joystick('GP28', 'GP27')
@@ -87,4 +124,8 @@ R_motor.enable()
 
 tim = Timer()
 
-tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
+#while True:
+ #   update_motors(tim, distance_sensor, speaker)
+ #   time.sleep(0.01)
+
+tim.init(mode=Timer.PERIODIC, freq=100, callback=ahmed)

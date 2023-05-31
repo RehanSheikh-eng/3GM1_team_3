@@ -2,7 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from collections import deque
-from defandclasses import *
+from functions_and_classes import *
 
 
 #generated sine wave parameters

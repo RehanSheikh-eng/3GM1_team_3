@@ -301,6 +301,8 @@ def getGPSdata():
 # 
 import uos
 
+<<<<<<< HEAD
+=======
 def log_data(filename, data):
     try:
         if filename not in uos.listdir():
@@ -316,3 +318,4 @@ def log_data(filename, data):
 
     except Exception as e:
         print("Error writing to file: ", e)
+>>>>>>> 908e59a46056c75b2c916b614d8c301cdf144bc0
