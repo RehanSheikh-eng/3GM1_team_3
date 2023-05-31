@@ -51,6 +51,7 @@ def crash():
     global reinitCrashDetectionTime
     resetTime = crashTime + 2
     reinitCrashDetectionTime = resetTime + 5
+    global passedUncrashStage
     passedUncrashStage = False
     
 
@@ -75,7 +76,7 @@ def ahmed(tim):
     global v_prev
     global test2
     #print("test 2", test2)
-    print('test',L_prev,R_prev)
+    #print('test',L_prev,R_prev)
     if not run.value():
         stop(tim)
         
