@@ -1,18 +1,18 @@
-#change 4
+# main.py -- put your code here!#change 3
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
-
+from collections import deque
 import math
 import utime as time
-from functions import log_data
+from functions import log_data, positionToSpeed, positionToAngularVelocity, findMotorSignalsFromSetSpeeds
 from crash_prevention import startCrashPrevention
 from DistanceSensorModule import DistanceSensor
 from picozero import Speaker
 
 # define objects involved in crash detection program
 distance_sensor = DistanceSensor(0,4,5)
-speaker = Speaker(14, initial_freq=750, duty_factor = 7000)
+speaker = Speaker(14, initial_freq=750, duty_factor = 0)
 current_total_crashes = 0 
 current_true_crashes = 0
 parking = False
@@ -66,8 +66,6 @@ class ButterworthFilter:
 
         return output
 
-xfilter = ButterworthFilter(9, 3, 0.01)
-yfilter = ButterworthFilter(9, 3, 0.01)
 
 
 # speedAmpltitude = 1
@@ -81,51 +79,76 @@ yfilter = ButterworthFilter(9, 3, 0.01)
 # stops = []
 # filtered_signal = [] 
 # startTime = round(utime.time())
-xfilter = ButterworthFilter(12, 2, 0.01)
-yfilter = ButterworthFilter(12, 2, 0.01)
+xfilter_ = ButterworthFilter(9, 2.5, 0.01)
+yfilter_ = ButterworthFilter(9, 2.5, 0.01)
 
 run = Pin('GP26', Pin.IN)
-filename = 'joystick_data.csv'
-data = {'x': None, 'y': None, 'filtered_x': None, 'filtered_y': None}
-with open(filename, "w") as file:
-    # Write the header to the file
-    file.write(','.join([key for key in data.keys()]) + '\n')
+
+def ahmed(tim):
+    safety = 1
+    x, y =  test_joystick.get_values()
+    print(x,y)
+    #x_filter = x
+    #y_filter = y
+    x_filter = xfilter_.update(x)
+    y_filter = yfilter_.update(y)
+    print('xy raw',x_filter,y_filter)
+    w = positionToAngularVelocity(y)
+    v = positionToSpeed(x)
+    print('speeds',v,w)
+    L_,R_ = findMotorSignalsFromSetSpeeds(v,w)
+    print('motor signals',L_,R_)
+    #left motor wired up opposite
+    #L = min(max(L,-1),1)
+    #R = min(max(R,-1),1)
+    #L = safety*1*min(max(x_filter+y_filter,-1),1)
+    #R = safety*1*min(max(x_filter-y_filter,-1),1)
+    #R = 0.3
+    #L = 0.3
+    #L = -L
+    #print('lR: ',L,R)
+    #log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
+    L_motor.set_speed(L_)
+    R_motor.set_speed(R_)
+    if not run.value():
+        print("finish")
+        L_motor.disable()
+        R_motor.disable()
+        
+
+        tim.deinit()
+    
+    # calculate distance
+    distance_buffer.pop(0)
+    distance_buffer.append(distance_sensor.get_distance())
+    distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
+    # crash detection
+    startCrashPrevention(distance, speaker)
+
+    # end main function
 
 
-def update_motors(tim):
-    with open(filename, "w") as file:
-        # Write the header to the file
-        safety = 1
-        x, y = test_joystick.get_values()
-        x_filter = xfilter.update(x)
-        y_filter = yfilter.update(y)
-
-        data = {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter}
-        file.write(','.join([str(value) for value in data.values()]) + '\n')
-
-        L = safety*1*min(max(x_filter+y_filter,-1),1)
-        R = safety*1*min(max(x_filter-y_filter,-1),1)
-        L_motor.set_speed(L)
-        R_motor.set_speed(R)
-        if not run.value():
-            print("finish")
-            L_motor.disable()
-            R_motor.disable()
-            tim.deinit()
 
 
 test_joystick = Joystick('GP28', 'GP27')
 
-L_motor = Motor('GP0', 'GP1', 'GP14')
-R_motor = Motor('GP2', 'GP3', 'GP15')
+L_motor = Motor('GP0', 'GP1', 'GP8')
+R_motor = Motor('GP2', 'GP3', 'GP9')
 
 L_motor.enable()
 R_motor.enable()
 
 tim = Timer()
 
-#while True:
- #   update_motors(tim, distance_sensor, speaker)
- #   time.sleep(0.01)
+while False:
+    L_motor.set_speed(0.01)
+    R_motor.set_speed(0.01)
+    time.sleep(2)
+    L_motor.set_speed(0.8)
+    R_motor.set_speed(0.8)
+    time.sleep(2)    
+    #update_motors(tim, distance_sensor, speaker)
+    #time.sleep(0.01)
 
 tim.init(mode=Timer.PERIODIC, freq=100, callback=ahmed)
+ 

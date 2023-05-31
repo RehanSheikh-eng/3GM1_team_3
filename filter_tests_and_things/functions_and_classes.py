@@ -1,11 +1,31 @@
-from motor_controller import Motor
-from joystick import Joystick
-from machine import Timer, Pin
-from collections import deque
-import math
-import time
+'''functions and classes used for test, some were deleted once we decided they were not needed'''
 
-# filter code
+import numpy as np
+import math
+
+
+#classes
+class LowPassFilter:
+    def __init__(self, alpha):
+        self.alpha = alpha
+        self.filtered_value = 0.0
+
+    def update(self, new_value):
+        self.filtered_value = (self.alpha * new_value) + ((1 - self.alpha) * self.filtered_value)
+        return self.filtered_value
+
+
+class HighPassFilter:
+    def __init__(self, alpha):
+        self.alpha = alpha
+        self.filtered_value = 0.0
+        self.previous_value = 0.0
+
+    def update(self, new_value):
+        self.filtered_value = self.alpha * (self.filtered_value + new_value - self.previous_value)
+        self.previous_value = new_value
+        return self.filtered_value
+
 
 class ButterworthFilter:
     def __init__(self, order, cutoff_freq, sampling_period):
@@ -50,48 +70,10 @@ class ButterworthFilter:
         self.outputs.pop(0)
         self.outputs.append(output)
 
-        return  output
+        return output
 
 
-
-# speedAmpltitude = 1
-# angSpeedAmpltitude = 1
-# xPosBuffer = [0] * 500
-# xPosBuffer = deque(xPosBuffer,maxlen=500)
-# yPosBuffer = [0] * 500
-# yPosBuffer = deque(yPosBuffer,maxlen=500)
-# testx = []
-# testy = []
-# stops = []
-# filtered_signal = [] 
-# startTime = round(utime.time())
-xfilter = ButterworthFilter(9, 1, 0.01)
-yfilter = ButterworthFilter(9, 1, 0.01)
-run = Pin('GP16', Pin.IN)
-
-def update_motors(tim):
-    safety = 0.8
-    x, y = test_joystick.get_values()
-    x = xfilter.update(x)
-    y = yfilter.update(y)
-    L = safety*0.9*min(max(x+y,-1),1)
-    R = safety*0.9*min(max(x-y,-1),1)
-    L_motor.set_speed(L)
-    R_motor.set_speed(R)
-    if not run.value():
-        L_motor.disable()
-        R_motor.disable()
-        tim.deinit()
-
-
-test_joystick = Joystick('GP28', 'GP27')
-
-L_motor = Motor('GP0', 'GP1', 'GP14')
-R_motor = Motor('GP2', 'GP3', 'GP15')
-
-L_motor.enable()
-R_motor.enable()
-
-tim = Timer()
-
-tim.init(mode=Timer.PERIODIC, freq=100, callback=update_motors)
+def generate_sine_wave(frequency, amplitude, duration, sampling_rate):
+    t = np.linspace(0, duration, int(duration * sampling_rate), endpoint=False)
+    signal = amplitude * np.sin(2 * np.pi * frequency * t)
+    return signal

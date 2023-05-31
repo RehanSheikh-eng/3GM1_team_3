@@ -2,6 +2,14 @@
 	"folders": [
 		{
 			"path": "../.."
+		},
+		{
+			"name": "overallWheelchair",
+			"path": "../overallWheelchair"
+		},
+		{
+			"name": "final display",
+			"path": "../final display"
 		}
 	],
 	"settings": {}

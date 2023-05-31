@@ -164,8 +164,8 @@ def speedEstimator(prevSpeed,leftMotorSignal,rightMotorSignal
         speed = (speed_motor*var_accel + speed_accel*var_motor)  / (var_accel + var_motor) # Kalman filtered velocity
     return speed
 
-def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = -0.3,posSpeedFreq = 2.7,\
-                     negSpeedAmplitude = 1, negSpeedOffset = 0.3,negSpeedFreq = 2.7 ):
+def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = 0,posSpeedFreq = 2.3,\
+                     negSpeedAmplitude = 1, negSpeedOffset = 0,negSpeedFreq = 2.3 ):
     """ this function maps the position on the joystick speed input to a desired speed using
         the non linear function v = A*tanh( wx+b )
 
@@ -186,17 +186,17 @@ def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = -0.3,posSpeedFreq =
     x = signalGain * x
     if x > 0:
         # work in positive speed part of graph 
-        v = posSpeedAmplitude* math.tanh(((posSpeedFreq * x) + posSpeedOffset))
+        v = posSpeedAmplitude*((posSpeedFreq * x) + posSpeedOffset)**3
         return max(0,v)
     elif x < 0:
         # work in negative speed part of graph
-        v = negSpeedAmplitude*math.tanh(((negSpeedFreq * x) + negSpeedOffset))
+        v = negSpeedAmplitude*((negSpeedFreq * x) + negSpeedOffset)**3
         return min(v,0)
     else:
         return 0
 
-def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.6,posAngVelFreq = 2.7,\
-                     negAngVelAmplitude = 1, negAngVelOffset = 0.6,negAngVelFreq = 2.7 ):
+def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = 0,posAngVelFreq = 2.3,\
+                     negAngVelAmplitude = 1, negAngVelOffset = 0,negAngVelFreq = 2.3 ):
     """ this function maps the position on the angular velocity joystick input to a desired angular Velocity using
         the non linear function omega = A*tanh( wx+b )
 
@@ -217,11 +217,11 @@ def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.6,po
     x = signalGain * x
     if x > 0:
         # work in positive speed part of graph 
-        v = posAngVelAmplitude* math.tanh((posAngVelFreq * x +posAngVelOffset))
+        v = posAngVelAmplitude* (posAngVelFreq * x +posAngVelOffset)**3
         return max(v,0)
     elif x < 0:
         # work in negative speed part of graph
-        v = negAngVelAmplitude*math.tanh((negAngVelFreq * x +negAngVelOffset))
+        v = negAngVelAmplitude*(negAngVelFreq * x +negAngVelOffset)**3
         return min(0,v)
     else:
         return 0
@@ -250,6 +250,7 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.05,motorVoltag
     leftMotorSignal = leftWheelAngVel * motorVoltageConstant
     rightMotorSignal = rightWheelAngVel * motorVoltageConstant
     return leftMotorSignal, rightMotorSignal
+
 
 
 def updateMotorSpeeds():
@@ -300,3 +301,21 @@ def getGPSdata():
 # 
 import uos
 
+<<<<<<< HEAD
+=======
+def log_data(filename, data):
+    try:
+        if filename not in uos.listdir():
+            # Open the file for writing if it doesn't exist
+            with open(filename, "w") as file:
+                # Write the header to the file
+                file.write(','.join([key for key in data.keys()]) + '\n')
+
+        # Open the file for appending
+        with open(filename, "a") as file:
+            # Write the data to the file
+            file.write(','.join([str(value) for value in data.values()]) + '\n')
+
+    except Exception as e:
+        print("Error writing to file: ", e)
+>>>>>>> 908e59a46056c75b2c916b614d8c301cdf144bc0

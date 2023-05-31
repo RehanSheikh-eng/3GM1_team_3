@@ -1,5 +1,5 @@
 
-from defandclasses import ButterworthFilter,LowPassFilter
+from functions_and_classes import ButterworthFilter,LowPassFilter
 import numpy as np
 import matplotlib.pyplot as plt
 

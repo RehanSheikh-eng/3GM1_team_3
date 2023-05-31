@@ -1,4 +1,4 @@
-from defandclasses import*
+from functions_and_classes import*
 import matplotlib.pyplot as plt
 
 

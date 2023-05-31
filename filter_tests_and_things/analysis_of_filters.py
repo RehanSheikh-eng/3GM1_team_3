@@ -5,7 +5,7 @@ This will not be in the pico '''
 from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
-from defandclasses import*
+from functions_and_classes import*
 from scipy.signal import butter, bode, TransferFunction
 
 def calculate_butterworth_highpass_coeffs(cutoff_freq, sample_rate, order):
