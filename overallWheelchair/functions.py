@@ -164,8 +164,8 @@ def speedEstimator(prevSpeed,leftMotorSignal,rightMotorSignal
         speed = (speed_motor*var_accel + speed_accel*var_motor)  / (var_accel + var_motor) # Kalman filtered velocity
     return speed
 
-def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = 0,posSpeedFreq = 2.3,\
-                     negSpeedAmplitude = 1, negSpeedOffset = 0,negSpeedFreq = 2.3 ):
+def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = -0.4,posSpeedFreq = 2.3,\
+                     negSpeedAmplitude = 1, negSpeedOffset = 0.4,negSpeedFreq = 2.3 ):
     """ this function maps the position on the joystick speed input to a desired speed using
         the non linear function v = A*tanh( wx+b )
 
@@ -186,17 +186,17 @@ def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = 0,posSpeedFreq = 2.
     x = signalGain * x
     if x > 0:
         # work in positive speed part of graph 
-        v = posSpeedAmplitude*((posSpeedFreq * x) + posSpeedOffset)**3
+        v = posSpeedAmplitude*math.tanh((posSpeedFreq * x) + posSpeedOffset)
         return max(0,v)
     elif x < 0:
         # work in negative speed part of graph
-        v = negSpeedAmplitude*((negSpeedFreq * x) + negSpeedOffset)**3
+        v = negSpeedAmplitude*math.tanh((negSpeedFreq * x) + negSpeedOffset)
         return min(v,0)
     else:
         return 0
 
-def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = 0,posAngVelFreq = 2.3,\
-                     negAngVelAmplitude = 1, negAngVelOffset = 0,negAngVelFreq = 2.3 ):
+def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.4,posAngVelFreq = 2.3,\
+                     negAngVelAmplitude = 1, negAngVelOffset = 0.4,negAngVelFreq = 2.3 ):
     """ this function maps the position on the angular velocity joystick input to a desired angular Velocity using
         the non linear function omega = A*tanh( wx+b )
 
@@ -213,15 +213,15 @@ def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = 0,posAn
         
         :return Omega: desired angular speed
         """ 
-    signalGain = 1 # gain of input pos
+    signalGain = 0.5 # gain of input pos
     x = signalGain * x
     if x > 0:
         # work in positive speed part of graph 
-        v = posAngVelAmplitude* (posAngVelFreq * x +posAngVelOffset)**3
+        v = posAngVelAmplitude* math.tanh(posAngVelFreq * x +posAngVelOffset)
         return max(v,0)
     elif x < 0:
         # work in negative speed part of graph
-        v = negAngVelAmplitude*(negAngVelFreq * x +negAngVelOffset)**3
+        v = negAngVelAmplitude*math.tanh(negAngVelFreq * x +negAngVelOffset)
         return min(0,v)
     else:
         return 0
@@ -242,7 +242,7 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.05,motorVoltag
 
     """
     signalGain = 0.15 # change this to keep the range as desired
-    v, omega = v * signalGain, omega * signalGain
+    v, omega = v *  (1/3) *signalGain, omega * signalGain * 2
     leftWheelSpeed = v + omega*l/2
     rightWheelSpeed = v - omega*l/2
     leftWheelAngVel = leftWheelSpeed / wheelRadius
@@ -250,7 +250,6 @@ def findMotorSignalsFromSetSpeeds(v,omega,l = 0.5,wheelRadius = 0.05,motorVoltag
     leftMotorSignal = leftWheelAngVel * motorVoltageConstant
     rightMotorSignal = rightWheelAngVel * motorVoltageConstant
     return leftMotorSignal, rightMotorSignal
-
 
 
 def updateMotorSpeeds():
@@ -329,22 +328,22 @@ def rateLimitControl(L,R,L_prev,R_prev,rateMax = 0.01):
     # first limit L
     deltaL = L - L_prev
     if abs(deltaL) <= rateMax: # set values if not rate limited
-        L_sp = L
+        L_sp = L_prev + deltaL
     elif deltaL < 0:
-        L_sp = L - rateMax
+        L_sp = L_prev - rateMax
     elif deltaL > 0:
-        L_sp = L + rateMax
+        L_sp = L_prev + rateMax
     else:
         print("Unexpected condition detected in L")
 
     # now limit R
     deltaR = R - R_prev
     if abs(deltaR) <= rateMax:
-        R_sp = R
+        R_sp = R_prev + deltaR
     elif deltaR < 0:
-        R_sp = R - rateMax
+        R_sp = R_prev - rateMax
     elif deltaR > 0:
-        R_sp = R + rateMax
+        R_sp = R_prev + rateMax
     else:
         print("Unexpected condition detected in R")
     return L_sp, R_sp
