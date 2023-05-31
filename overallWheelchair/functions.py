@@ -316,7 +316,7 @@ def log_data(filename, data):
     except Exception as e:
         print("Error writing to file: ", e)
 
-def rateLimitControl(L,R,L_prev,R_prev,rateMax = 0.01):
+def rateLimitControl(L,R,L_prev,R_prev,lowSpeedRateMax = 0.01,highSpeedRateMax = 0.02,decelRate=0.1):
     """
     function to limit change in motor rate in response to instability issues
     :param @L - current L motor position
@@ -326,6 +326,17 @@ def rateLimitControl(L,R,L_prev,R_prev,rateMax = 0.01):
 
     """
     # first limit L
+
+    # decide which rate to use
+    if L < 0.3 or R < 0.3:
+        rateMax = lowSpeedRateMax
+    elif L >=0.3 and R  >= 0.3:
+        rateMax = highSpeedRateMax
+    else:
+        rateMax = lowSpeedRateMax
+        print("Unusual condition in rate decider loop")
+    if deltaL < 0:
+        rateMax = decelRate
     deltaL = L - L_prev
     if abs(deltaL) <= rateMax: # set values if not rate limited
         L_sp = L_prev + deltaL
