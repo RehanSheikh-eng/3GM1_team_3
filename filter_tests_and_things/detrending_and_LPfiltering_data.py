@@ -98,3 +98,5 @@ plt.xlabel('samples')
 plt.ylabel('position')
 plt.title('Extracted Tremor Data')
 plt.show()
+
+print(extracted_tremor_data)
