@@ -24,6 +24,7 @@ R_prev = 0
 v_prev = 0
 w_prev = 0
 test2 = 1
+passedUncrashStage = False
 
 # filter code
 
@@ -38,25 +39,33 @@ def stop(tim):
     R_motor.disable()
     tim.deinit()
 
-def crash(tim_):
+def crash():
+    global recovering
+    recovering = True
     print("crashed")
     L_motor.disable()
     R_motor.disable()
+    global crashTime
+    crashTime = time.time()
+    global resetTime
+    global reinitCrashDetectionTime
+    resetTime = crashTime + 2
+    reinitCrashDetectionTime = resetTime + 5
+    passedUncrashStage = False
     
-    tim_.init(period=2000,mode=Timer.ONE_SHOT, callback=uncrash)
 
-def uncrash(timer):
+def uncrash():
     print("uncrashed")
     L_motor.enable()
     R_motor.enable()
-    recovering = True
-    timer.deinit()
-    timer = Timer()
-    timer.init(period=2000, callback=recovered)
+    global passedUncrashStage
+    passedUncrashStage = True
 
-def recovered(timer):
-    timer.deinit()
+
+def recovered():
+    global recovering
     recovering = False
+    print("recovered")
     
 
 def ahmed(tim):
@@ -65,7 +74,7 @@ def ahmed(tim):
     global w_prev
     global v_prev
     global test2
-    print("test 2", test2)
+    #print("test 2", test2)
     print('test',L_prev,R_prev)
     if not run.value():
         stop(tim)
@@ -81,9 +90,9 @@ def ahmed(tim):
     w = positionToAngularVelocity(y)
 #     
     v = positionToSpeed(x)
-    print('dem speeds',v,w)
+    #print('dem speeds',v,w)
     v,w = rateLimitControl(v,w,v_prev,w_prev,lowSpeedRateMax = 0.01,highSpeedRateMax = 0.005,decelRate = 0.02)
-    print(' resp speeds',v,w)
+    #print(' resp speeds',v,w)
     L_,R_ = findMotorSignalsFromSetSpeeds(v,w)
 #   
 #     print('motor signals',L_,R_)
@@ -95,10 +104,10 @@ def ahmed(tim):
     
 #    L = 0.1
 #    R = 0.1
-    print('DEMANDED: ',L_,R_)
+    #print('DEMANDED: ',L_,R_)
     #print("prev",R_prev,L_prev)
     #L_,R_ = rateLimitControl(L_,R_,L_prev,R_prev,lowSpeedRateMax = 0.02,highSpeedRateMax = 0.005,decelRate = 0.05)
-    print("SUPPLIED",L_,R_)
+    #print("SUPPLIED",L_,R_)
     v_prev = v
     w_prev = w
     #R_prev = R_
@@ -115,9 +124,14 @@ def ahmed(tim):
     distance_buffer.append(distance_sensor.get_distance())
     distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
     # crash detection
+    global parking
     if not recovering:
-        if startCrashPrevention(distance, speaker):
-            crash(crashTimer)
+        if startCrashPrevention(distance, speaker,parking):
+            crash()
+    elif recovering and time.time() > resetTime and passedUncrashStage == False:
+        uncrash()
+    elif recovering and time.time() > reinitCrashDetectionTime:
+        recovered()
     # end main function
 
 
@@ -133,7 +147,7 @@ R_motor.enable()
 
 
 tim = Timer()
-crashTimer = Timer()
+
 while False:
     L_motor.set_speed(0.01)
     R_motor.set_speed(0.01)
