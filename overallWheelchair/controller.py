@@ -285,14 +285,18 @@ for i in range(0,len(listYPOS)):
 
     # update key variables 
 
-
+vals = np.linspace(1,8,800)
 print("actual frequency:",800/(utime.time() - startTime)) # actual is around 83 hz for 8 seconds of 100 hz samples
-plt.plot(filtered_signal,label = 'filt signal y')
-plt.plot(testy,label = 'raw y')
-plt.plot(speedAmplitudeLog,label = 'est speed')
+plt.plot(vals,filtered_signal,label = 'Filtered Speed')
+plt.plot(vals,testy,label = 'Raw Speed')
+#plt.plot(speedAmplitudeLog,label = 'est speed')
 print(np.shape(stops))
 print(np.shape(testx))
-plt.plot(stops)
+plt.plot(vals,stops,label = 'Stop Signal')
+plt.legend()
+plt.title("Joystick Pullback Demo")
+plt.xlabel('Time /s')
+plt.ylabel('Signal')
 plt.show()
 print("program executed")
 

@@ -12,7 +12,8 @@ from picozero import Speaker
 
 # define objects involved in crash detection program
 distance_sensor = DistanceSensor(0,4,5)
-speaker = Speaker(14, initial_freq=700, duty_factor = 0)
+# speaker = Speaker(14, initial_freq=700, duty_factor = 7000)
+speaker = Pin(14, Pin.OUT)	
 current_total_crashes = 0 
 current_true_crashes = 0
 parking = False
@@ -26,68 +27,37 @@ test2 = 1
 
 # filter code
 
-class ButterworthFilter:
-    def __init__(self, order, cutoff_freq, sampling_period):
-        self.order = order
-        self.cutoff_freq = cutoff_freq
-        self.sampling_period = sampling_period
-        self.coefficients = [0.0] * (order + 1)
-        self.inputs = [0.0] * (order + 1)
-        self.outputs = [0.0] * (order + 1)
-
-        self.calculate_coefficients()
-
-    def calculate_coefficients(self):
-        # Calculate filter coefficients
-        a = [0.0] * (self.order + 1)
-        b = [0.0] * (self.order + 1)
-        theta_c = 2.0 * math.pi * self.cutoff_freq
-        k = math.tan(theta_c * self.sampling_period / 2.0)
-        k2 = k * k
-
-        a[0] = 1.0
-        a[1] = self.order * k2 + 2.0 * k + 1.0
-        for i in range(2, self.order + 1):
-            a[i] = k2 * a[i - 2] + 2.0 * k * a[i - 1] + a[i - 2]
-
-        b[0] = k2 * self.order
-        b[1] = 2.0 * k2 * self.order
-        for i in range(2, self.order + 1):
-            b[i] = k2 * b[i - 2] + 2.0 * k * b[i - 1] + b[i - 2]
-
-        self.coefficients = [bi / ai for bi, ai in zip(b, a)]
-
-    def update(self, input_value):
-        # Apply the filter
-        self.inputs.pop(0)
-        self.inputs.append(input_value)
-
-        output = 0.0
-        for i in range(self.order + 1):
-            output += self.coefficients[i] * self.inputs[self.order - i]
-
-        self.outputs.pop(0)
-        self.outputs.append(output)
-
-        return output
-
-
-
-# speedAmpltitude = 1
-# angSpeedAmpltitude = 1
-# xPosBuffer = [0] * 500
-# xPosBuffer = deque(xPosBuffer,maxlen=500)
-# yPosBuffer = [0] * 500
-# yPosBuffer = deque(yPosBuffer,maxlen=500)
-# testx = []
-# testy = []
-# stops = []
-# filtered_signal = [] 
-# startTime = round(utime.time())
-xfilter_ = ButterworthFilter(9, 0.1, 0.005)
-yfilter_ = ButterworthFilter(9, 0.1, 0.005)
 
 run = Pin('GP26', Pin.IN)
+
+recovering = False
+
+def stop(tim):
+    print("finish")
+    L_motor.disable()
+    R_motor.disable()
+    tim.deinit()
+
+def crash(tim_):
+    print("crashed")
+    L_motor.disable()
+    R_motor.disable()
+    
+    tim_.init(period=2000,mode=Timer.ONE_SHOT, callback=uncrash)
+
+def uncrash(timer):
+    print("uncrashed")
+    L_motor.enable()
+    R_motor.enable()
+    recovering = True
+    timer.deinit()
+    timer = Timer()
+    timer.init(period=2000, callback=recovered)
+
+def recovered(timer):
+    timer.deinit()
+    recovering = False
+    
 
 def ahmed(tim):
     #global L_prev
@@ -98,10 +68,7 @@ def ahmed(tim):
     print("test 2", test2)
     print('test',L_prev,R_prev)
     if not run.value():
-        print("finish")
-        L_motor.disable()
-        R_motor.disable()
-        tim.deinit()
+        stop(tim)
         
     safety = 0.5
     y, x =  test_joystick.get_values()
@@ -148,8 +115,9 @@ def ahmed(tim):
     distance_buffer.append(distance_sensor.get_distance())
     distance = (distance_buffer[0] + distance_buffer[1] + distance_buffer[2])/3
     # crash detection
-    startCrashPrevention(distance, speaker)
-
+    if not recovering:
+        if startCrashPrevention(distance, speaker):
+            crash(crashTimer)
     # end main function
 
 
@@ -165,7 +133,7 @@ R_motor.enable()
 
 
 tim = Timer()
-
+crashTimer = Timer()
 while False:
     L_motor.set_speed(0.01)
     R_motor.set_speed(0.01)
