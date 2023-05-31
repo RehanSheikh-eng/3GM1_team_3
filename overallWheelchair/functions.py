@@ -164,8 +164,8 @@ def speedEstimator(prevSpeed,leftMotorSignal,rightMotorSignal
         speed = (speed_motor*var_accel + speed_accel*var_motor)  / (var_accel + var_motor) # Kalman filtered velocity
     return speed
 
-def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = -0.4,posSpeedFreq = 2.3,\
-                     negSpeedAmplitude = 1, negSpeedOffset = 0.4,negSpeedFreq = 2.3 ):
+def positionToSpeed(x,posSpeedAmplitude,negSpeedAmplitude,posSpeedOffset = -0.4,posSpeedFreq = 2.3,\
+                      negSpeedOffset = 0.4,negSpeedFreq = 2.3 ):
     """ this function maps the position on the joystick speed input to a desired speed using
         the non linear function v = A*tanh( wx+b )
 
@@ -186,17 +186,17 @@ def positionToSpeed(x,posSpeedAmplitude = 1,posSpeedOffset = -0.4,posSpeedFreq =
     x = signalGain * x
     if x > 0:
         # work in positive speed part of graph 
-        v = posSpeedAmplitude*math.tanh((posSpeedFreq * x) + posSpeedOffset)
+        v = 0.85 * posSpeedAmplitude*math.tanh((posSpeedFreq * x) + posSpeedOffset)
         return max(0,v)
     elif x < 0:
         # work in negative speed part of graph
-        v = negSpeedAmplitude*math.tanh((negSpeedFreq * x) + negSpeedOffset)
+        v = 0.85 * negSpeedAmplitude*math.tanh((negSpeedFreq * x) + negSpeedOffset)
         return min(v,0)
     else:
         return 0
 
-def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.4,posAngVelFreq = 2.3,\
-                     negAngVelAmplitude = 1, negAngVelOffset = 0.4,negAngVelFreq = 2.3 ):
+def positionToAngularVelocity(x,posAngVelAmplitude,negAngVelAmplitude,posAngVelOffset = -0.4,posAngVelFreq = 2.3,\
+                      negAngVelOffset = 0.4,negAngVelFreq = 2.3 ):
     """ this function maps the position on the angular velocity joystick input to a desired angular Velocity using
         the non linear function omega = A*tanh( wx+b )
 
@@ -213,7 +213,7 @@ def positionToAngularVelocity(x,posAngVelAmplitude = 1,posAngVelOffset = -0.4,po
         
         :return Omega: desired angular speed
         """ 
-    signalGain = 0.5 # gain of input pos
+    signalGain = 0.75 # gain of input pos
     x = signalGain * x
     if x > 0:
         # work in positive speed part of graph 

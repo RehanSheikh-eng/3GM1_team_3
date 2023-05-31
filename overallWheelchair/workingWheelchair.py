@@ -1,4 +1,4 @@
-# main.py -- put your code here!#change 3
+## main.py -- put your code here!#change 3
 from motor_controller import Motor
 from joystick import Joystick
 from machine import Timer, Pin
@@ -25,7 +25,7 @@ v_prev = 0
 w_prev = 0
 test2 = 1
 passedUncrashStage = False
-
+wellnessScore = 0.7
 # filter code
 
 
@@ -53,6 +53,8 @@ def crash():
     reinitCrashDetectionTime = resetTime + 5
     global passedUncrashStage
     passedUncrashStage = False
+    global wellnessScore
+    wellnessScore = 0.9 * wellnessScore
     
 
 def uncrash():
@@ -72,6 +74,7 @@ def recovered():
 def ahmed(tim):
     #global L_prev
     #global R_prev
+    global wellnessScore
     global w_prev
     global v_prev
     global test2
@@ -88,9 +91,8 @@ def ahmed(tim):
     #x_filter = xfilter_.update(x)
     #y_filter = yfilter_.update(y)
 #     print('xy raw',x_filter,y_filter)
-    w = positionToAngularVelocity(y)
-#     
-    v = positionToSpeed(x)
+    w = positionToAngularVelocity(y,wellnessScore,wellnessScore)
+    v = positionToSpeed(x,wellnessScore,wellnessScore)
     #print('dem speeds',v,w)
     v,w = rateLimitControl(v,w,v_prev,w_prev,lowSpeedRateMax = 0.01,highSpeedRateMax = 0.005,decelRate = 0.02)
     #print(' resp speeds',v,w)
