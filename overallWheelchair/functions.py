@@ -301,8 +301,6 @@ def getGPSdata():
 # 
 import uos
 
-<<<<<<< HEAD
-=======
 def log_data(filename, data):
     try:
         if filename not in uos.listdir():
@@ -318,4 +316,36 @@ def log_data(filename, data):
 
     except Exception as e:
         print("Error writing to file: ", e)
->>>>>>> 908e59a46056c75b2c916b614d8c301cdf144bc0
+
+def rateLimitControl(L,R,L_prev,R_prev,rateMax = 0.01):
+    """
+    function to limit change in motor rate in response to instability issues
+    :param @L - current L motor position
+    :param @L - current R motor position
+    :param @L_prev - last set left motor position
+    :param @R_prev - last set right motor position
+
+    """
+    # first limit L
+    deltaL = L - L_prev
+    if abs(deltaL) <= rateMax: # set values if not rate limited
+        L_sp = L
+    elif deltaL < 0:
+        L_sp = L - rateMax
+    elif deltaL > 0:
+        L_sp = L + rateMax
+    else:
+        print("Unexpected condition detected in L")
+
+    # now limit R
+    deltaR = R - R_prev
+    if abs(deltaR) <= rateMax:
+        R_sp = R
+    elif deltaR < 0:
+        R_sp = R - rateMax
+    elif deltaR > 0:
+        R_sp = R + rateMax
+    else:
+        print("Unexpected condition detected in R")
+    return L_sp, R_sp
+
