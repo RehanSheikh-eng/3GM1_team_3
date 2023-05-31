@@ -20,6 +20,8 @@ cur_time = 0
 distance_buffer = [501,501,501]
 L_prev = 0
 R_prev = 0
+v_prev = 0
+w_prev = 0
 test2 = 1
 
 # filter code
@@ -88,8 +90,10 @@ yfilter_ = ButterworthFilter(9, 0.1, 0.005)
 run = Pin('GP26', Pin.IN)
 
 def ahmed(tim):
-    global L_prev
-    global R_prev
+    #global L_prev
+    #global R_prev
+    global w_prev
+    global v_prev
     global test2
     print("test 2", test2)
     print('test',L_prev,R_prev)
@@ -110,8 +114,11 @@ def ahmed(tim):
     w = positionToAngularVelocity(y)
 #     
     v = positionToSpeed(x)
-    print('speeds',v,w)
+    print('dem speeds',v,w)
+    v,w = rateLimitControl(v,w,v_prev,w_prev,lowSpeedRateMax = 0.01,highSpeedRateMax = 0.005,decelRate = 0.02)
+    print(' resp speeds',v,w)
     L_,R_ = findMotorSignalsFromSetSpeeds(v,w)
+#   
 #     print('motor signals',L_,R_)
 #     left motor wired up opposite
 #     L = min(max(L,-1),1)
@@ -123,10 +130,12 @@ def ahmed(tim):
 #    R = 0.1
     print('DEMANDED: ',L_,R_)
     #print("prev",R_prev,L_prev)
-    L_,R_ = rateLimitControl(L_,R_,L_prev,R_prev,rateMax = 0.01)
+    #L_,R_ = rateLimitControl(L_,R_,L_prev,R_prev,lowSpeedRateMax = 0.02,highSpeedRateMax = 0.005,decelRate = 0.05)
     print("SUPPLIED",L_,R_)
-    R_prev = R_
-    L_prev = L_ 
+    v_prev = v
+    w_prev = w
+    #R_prev = R_
+    #L_prev = L_ 
     #log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
     R_ = R_
     L_motor.set_speed(L_)
