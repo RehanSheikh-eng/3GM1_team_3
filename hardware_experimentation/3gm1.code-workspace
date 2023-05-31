@@ -10,6 +10,10 @@
 		{
 			"name": "final display",
 			"path": "../final display"
+		},
+		{
+			"name": "serial://dev/ttyACM0",
+			"uri": "serial://%2fdev%2fttyacm0/"
 		}
 	],
 	"settings": {}
