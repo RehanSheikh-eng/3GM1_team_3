@@ -28,13 +28,13 @@ alpha = 0.6
 LPfilter = LowPassFilter(alpha)
 listXPOS, listYPOS = readjoystickTextFile()
 # plt.plot(listXPOS)
-plt.plot(listYPOS)
+plt.plot(listXPOS)
 plt.xlabel('samples')
 plt.ylabel('position')
-plt.title('Y position of the joystick')
+plt.title('X position of the joystick')
 plt.show()
 
-data = listYPOS  # Replace with your actual data
+data = listXPOS  # Replace with your actual data
 
 # Compute the power spectrum using Fourier transform
 fft_data = np.fft.fft(data)
@@ -55,7 +55,7 @@ filtered_data = []
 for i in range(len(data)-1):
     filtered_value = LPfilter.update(data[i])
     filtered_data.append(filtered_value)
-    fft_data = np.fft.fft(filtered_data)
+fft_data = np.fft.fft(filtered_data)
 freq = np.fft.fftfreq(len(filtered_data), d=1/sampling_rate)
 
 # Plot the frequencies
@@ -70,7 +70,7 @@ filtered_data1 = []
 for i in range(len(filtered_data)-1):
     filtered_value = Bfilter.update(filtered_data[i])
     filtered_data1.append(filtered_value)
-    fft_data = np.fft.fft(filtered_data1)
+fft_data = np.fft.fft(filtered_data1)
 freq = np.fft.fftfreq(len(filtered_data1), d=1/sampling_rate)
 
 # Plot the frequencies
