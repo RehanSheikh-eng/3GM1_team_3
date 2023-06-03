@@ -1,4 +1,5 @@
-
+''' How the trmeor analysis would be implemetned in the actual wheelchair control system
+Ana'''
 import numpy as np
 
 # functions and classes
