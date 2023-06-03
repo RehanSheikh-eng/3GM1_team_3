@@ -1,6 +1,9 @@
+'''This filter was the final one used for the analysis
+this code was used to see the effect tha tthe filter has on changes of frequency and amplitude which can occur in a real tremor
+written by Ana'''
+
 from functions_and_classes import*
 import matplotlib.pyplot as plt
-
 
 # generated sine wave parameters
 frequency = 2  # Frequency of the sine wave in Hz

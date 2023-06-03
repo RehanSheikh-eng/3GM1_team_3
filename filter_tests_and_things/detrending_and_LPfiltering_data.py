@@ -1,4 +1,5 @@
-
+'''This code takes data from the joystick and extracts the tremor from it
+written by Ana'''
 from functions_and_classes import ButterworthFilter,LowPassFilter
 import numpy as np
 import matplotlib.pyplot as plt

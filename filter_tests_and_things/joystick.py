@@ -1,3 +1,7 @@
+''' first version of how the filtering of joystick data was going to work
+not implemented
+Ana'''
+
 import numpy as np
 import math
 import matplotlib.pyplot as plt

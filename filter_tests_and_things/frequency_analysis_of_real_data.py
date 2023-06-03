@@ -1,3 +1,6 @@
+'''this code was written to compare the frequency composition of real data with the filtered data
+written by Ana'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from detrending_and_LPfiltering_data import extracted_tremor_data

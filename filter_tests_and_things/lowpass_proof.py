@@ -1,7 +1,5 @@
-import random
-
-import numpy as np
-import math
+''' used to test low pass filter
+Ana'''
 import matplotlib.pyplot as plt
 from collections import deque
 from functions_and_classes import *

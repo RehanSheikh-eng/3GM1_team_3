@@ -1,3 +1,7 @@
+'''this code was written to calculate the biquad coefficients similar to SciPy bor lowpass and bandpass biqua filters
+it did not work for our purposes
+written by Ana'''
+
 import numpy as np
 import scipy.signal as signal
 

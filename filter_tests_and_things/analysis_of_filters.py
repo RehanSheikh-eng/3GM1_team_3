@@ -1,6 +1,7 @@
 '''This code analyses the attentiation for different filters from the ones we tried to implement.
 analysis only
-This will not be in the pico '''
+This will not be in the pico
+Written by Ana'''
 
 from scipy import signal
 import numpy as np

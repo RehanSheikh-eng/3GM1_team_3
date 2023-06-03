@@ -1,4 +1,5 @@
-''' this filter was tested but does no work well enough for our purposes'''
+''' this filter was tested but does no work well enough for our purposes
+written by Ana'''
 
 # defs and classes
 class BiquadFilter:

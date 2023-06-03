@@ -1,3 +1,5 @@
+'''steps needed to convert the simluink model into a python modesl
+written by Ana'''
 #constants
 normalising_gain= 1/10
 

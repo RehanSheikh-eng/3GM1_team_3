@@ -1,3 +1,6 @@
+'''we wanted to compare the scipy libraries with our simplified filters
+written by Ana and only used for testing'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
