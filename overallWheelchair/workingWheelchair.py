@@ -71,51 +71,30 @@ def recovered():
     print("recovered")
     
 
-def ahmed(tim):
+def mainProcess(tim):
     #global L_prev
     #global R_prev
     global wellnessScore
     global w_prev
     global v_prev
     global test2
-    #print("test 2", test2)
-    #print('test',L_prev,R_prev)
     if not run.value():
         stop(tim)
         
     safety = 0.5
     y, x =  test_joystick.get_values()
-    #print(x,y)
     x_filter = x
     y_filter = y
-    #x_filter = xfilter_.update(x)
-    #y_filter = yfilter_.update(y)
-#     print('xy raw',x_filter,y_filter)
     w = positionToAngularVelocity(y,wellnessScore,wellnessScore)
     v = positionToSpeed(x,wellnessScore,wellnessScore)
     #print('dem speeds',v,w)
     v,w = rateLimitControl(v,w,v_prev,w_prev,lowSpeedRateMax = 0.01,highSpeedRateMax = 0.005,decelRate = 0.02)
     #print(' resp speeds',v,w)
     L_,R_ = findMotorSignalsFromSetSpeeds(v,w)
-#   
-#     print('motor signals',L_,R_)
-#     left motor wired up opposite
-#     L = min(max(L,-1),1)
-#     R = min(max(R,-1),1)
-    #L_ = safety*0.9*min(max((x_filter+y_filter)**3,-1),1)
-    #R_ = safety*0.9*min(max((x_filter-y_filter)**3,-1),1)
-    
-#    L = 0.1
-#    R = 0.1
-    #print('DEMANDED: ',L_,R_)
-    #print("prev",R_prev,L_prev)
-    #L_,R_ = rateLimitControl(L_,R_,L_prev,R_prev,lowSpeedRateMax = 0.02,highSpeedRateMax = 0.005,decelRate = 0.05)
-    #print("SUPPLIED",L_,R_)
+
     v_prev = v
     w_prev = w
-    #R_prev = R_
-    #L_prev = L_ 
-    #log_data('logfile.csv', {'x': x, 'y': y, 'filtered_x': x_filter, 'filtered_y': y_filter})
+
     R_ = R_
     L_motor.set_speed(L_)
     R_motor.set_speed(R_)
@@ -151,14 +130,4 @@ R_motor.enable()
 
 tim = Timer()
 
-while False:
-    L_motor.set_speed(0.01)
-    R_motor.set_speed(0.01)
-    time.sleep(2)
-    L_motor.set_speed(0.8)
-    R_motor.set_speed(0.8)
-    time.sleep(2)    
-    #update_motors(tim, distance_sensor, speaker)
-    #time.sleep(0.01)
-
-tim.init(mode=Timer.PERIODIC, freq=200, callback=ahmed)
+tim.init(mode=Timer.PERIODIC, freq=200, callback=mainProcess)
